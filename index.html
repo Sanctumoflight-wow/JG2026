@@ -73,19 +73,23 @@
 
         /* --- ТИТУЛЬНЫЙ ЭКРАН --- */
         #titleScreen {
-            background: #f8f9fa; 
             display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 150;
-            color: #111;
+            color: #fff;
         }
         .main-title {
             font-size: 50px; font-weight: 900; letter-spacing: -1px; margin-bottom: 50px; text-transform: uppercase;
-            font-family: sans-serif;
+            font-family: 'Montserrat', sans-serif; text-shadow: 0 4px 10px rgba(0,0,0,0.9); z-index: 1;
         }
         .start-btn {
-            background: #dcdcdc; color: #111; font-size: 40px; padding: 15px 50px; border: none; cursor: pointer;
-            transition: 0.2s; font-family: sans-serif;
+            background: linear-gradient(to bottom, #f39c12, #d35400); color: #fff; font-size: 35px; font-weight: 900; 
+            padding: 15px 50px; border: 3px solid #fff; border-radius: 15px; cursor: pointer;
+            box-shadow: 0 8px 0 #a04000, 0 15px 20px rgba(0,0,0,0.6); text-transform: uppercase;
+            transition: all 0.1s ease; font-family: 'Montserrat', sans-serif; text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+            z-index: 1;
         }
-        .start-btn:hover { background: #c0c0c0; }
+        .start-btn:active {
+            transform: translateY(8px); box-shadow: 0 0 0 #a04000, 0 5px 10px rgba(0,0,0,0.6);
+        }
 
         /* --- СТАРТОВЫЙ ЭКРАН --- */
         #startScreen {
@@ -186,7 +190,7 @@
         }
         #dialogueActionBtn {
             position: absolute;
-            top: 25%; /* Расположение по центру сверху над окном диалога */
+            top: 25%;
             left: 50%;
             transform: translateX(-50%);
             display: none;
@@ -334,8 +338,10 @@
 
         <!-- ТИТУЛЬНЫЙ ЭКРАН -->
         <div id="titleScreen" class="screen-overlay">
+            <!-- Фоновое видео для стартового экрана -->
+            <video id="menuVideo" src="images/Menu.mp4" autoplay loop muted playsinline style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1;"></video>
             <div class="main-title">JARISSE GAME #2</div>
-            <button class="start-btn" onclick="goToIntro()">Старт</button>
+            <button class="start-btn" onclick="goToIntro()">ИГРАТЬ</button>
         </div>
 
         <!-- СТАРТОВЫЙ ЭКРАН -->
@@ -460,6 +466,7 @@
 
         // --- НАВИГАЦИЯ ---
         function goToIntro() {
+            document.getElementById('menuVideo').pause();
             document.getElementById('titleScreen').style.display = 'none';
             document.getElementById('startScreen').style.display = 'flex';
         }
@@ -476,6 +483,7 @@
             document.getElementById('finishHimOverlay').style.display = 'none';
             document.getElementById('videoOverlay').style.display = 'none';
             
+            document.getElementById('menuVideo').pause();
             const vid = document.getElementById('ultimateVideo');
             vid.pause();
             vid.currentTime = 0;
