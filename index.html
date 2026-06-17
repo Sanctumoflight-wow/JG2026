@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Jarisse Game #2</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;900&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
     <style>
         body { 
             font-family: 'Montserrat', sans-serif; 
@@ -46,13 +46,15 @@
         #debugMenu {
             position: fixed; top: 0; left: 0; width: 100%; height: 50px;
             background: rgba(0, 0, 0, 0.85); border-bottom: 3px solid #f1c40f;
-            display: flex; justify-content: center; align-items: center; gap: 15px;
+            display: flex; justify-content: center; align-items: center; gap: 8px;
             z-index: 9999; backdrop-filter: blur(5px);
+            padding: 5px;
         }
-        .debug-label { color: #f1c40f; font-weight: 900; text-transform: uppercase; }
+        .debug-label { color: #f1c40f; font-weight: 900; text-transform: uppercase; font-size: 12px; }
         .debug-btn {
             background: transparent; color: white; border: 2px solid #7f8c8d;
-            border-radius: 5px; padding: 5px 15px; cursor: pointer; font-weight: bold; transition: 0.2s;
+            border-radius: 5px; padding: 4px 10px; cursor: pointer; font-weight: bold; transition: 0.2s;
+            font-size: 11px;
         }
         .debug-btn:hover { background: #f1c40f; color: #1a252f; border-color: #f1c40f; }
 
@@ -121,6 +123,7 @@
             position: absolute; top: 15px; left: 40px; z-index: 10;
             background: rgba(0, 0, 0, 0.5); padding: 5px 15px; border-radius: 20px;
             font-size: 16px; border: 1px solid rgba(255, 255, 255, 0.2); backdrop-filter: blur(5px);
+            transition: opacity 0.3s;
         }
         #score { font-weight: 700; color: #f1c40f; margin-left: 5px; font-size: 18px; }
         canvas { position: absolute; top: 0; left: 0; background-color: #1a252f; z-index: 1; }
@@ -139,10 +142,11 @@
             position: absolute; top: 15px; right: 20px; z-index: 10;
             padding: 8px 20px; font-size: 14px; font-weight: 700; cursor: pointer; 
             border: 2px solid rgba(255, 255, 255, 0.3); border-radius: 20px; background: rgba(0,0,0,0.5); color: white; 
+            transition: opacity 0.3s;
         }
 
         /* --- ОКНА ВНУТРИ ИГРЫ --- */
-        #quizOverlay, #feedbackOverlay, #victoryOverlay, #transitionOverlay {
+        #quizOverlay, #feedbackOverlay, #victoryOverlay {
             display: none; background: rgba(0, 0, 0, 0.85); z-index: 5000; 
             justify-content: center; align-items: center; text-align: center; backdrop-filter: blur(5px);
         }
@@ -156,51 +160,85 @@
         .victory-title { font-size: 40px; font-weight: 900; color: #f1c40f; margin-bottom: 10px; }
         .victory-text { font-size: 18px; margin-bottom: 20px; }
 
+        /* --- СИСТЕМА ДИАЛОГОВ (НОВАЯ) --- */
+        #dialogueOverlay {
+            display: none; z-index: 4000; background: rgba(0, 0, 0, 0.2); 
+        }
+        .dialogue-container {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            background: url('images/dialogs/Dialog%20TEST.png') center/100% 100% no-repeat; 
+            pointer-events: auto; cursor: pointer;
+        }
+        #dialogueText {
+            position: absolute; 
+            top: 55%; bottom: 15%; 
+            left: 35%; right: 5%;  
+            font-size: 26px; font-weight: 600; color: #fff; text-shadow: 0 2px 4px #000; 
+            font-family: 'Playfair Display', serif; line-height: 1.4;
+            text-align: left; padding: 10px; overflow: hidden;
+            display: block; white-space: pre-wrap; 
+        }
+        .dialogue-hint {
+            position: absolute; 
+            top: 35%; right: 8%; /* Подняли в нужную область справа сверху */
+            font-size: 16px; color: #f1c40f; font-family: 'Montserrat', sans-serif;
+            opacity: 0.8; animation: blink 1.5s infinite; text-shadow: 0 2px 4px #000;
+        }
+
         /* --- АРЕНА ДЛЯ БОССА --- */
         #bossOverlay {
-            display: none; background: url('images/boss_bg.png') center/cover no-repeat;
+            display: none; background: url('images/boss_bg.png?v=2') center/cover no-repeat;
             z-index: 200; flex-direction: column; align-items: center; overflow: hidden;
         }
         
-        /* Прозрачный пол, чтобы фон покрывал весь экран, оставляем только линию */
-        .arena-ground { position: absolute; bottom: 0; left: 0; width: 100%; height: 15%; background: transparent; border-top: 3px solid #f1c40f; z-index: 200; }
+        .arena-ground { position: absolute; bottom: 0; left: 0; width: 100%; height: 15%; background: transparent; border: none; z-index: 200; }
         
-        /* Здоровье босса: черепки с крестиком */
         #bossSkullsContainer {
-            position: absolute; top: 15%; right: 5%;
+            position: absolute; top: 15px; right: 40px;
             display: flex; justify-content: center; align-items: center; z-index: 203;
         }
 
-        /* Персонаж слева */
+        #bossHintText {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            font-size: 16px; opacity: 0.8; z-index: 203; white-space: nowrap; margin: 0;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+        }
+
         #arenaPlayer {
-            position: absolute; bottom: 12%; left: 10%; height: 50%; width: auto; 
+            position: absolute; bottom: 26%; left: 8%; height: 50%; width: auto; 
             z-index: 202; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.5));
         }
 
-        /* Босс справа */
         #arenaBoss {
             position: absolute; bottom: 12%; right: 5%; max-height: 45%; width: auto; 
             z-index: 202; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.8));
-            /* Плавное движение для уворота */
             transition: bottom 0.8s ease-in-out, transform 0.1s, filter 0.1s; cursor: crosshair;
         }
 
         .player-projectile {
             position: absolute; width: 25px; height: 25px; object-fit: contain; z-index: 201;
-            /* Снаряд летит 2 секунды */
             transition: left 2s ease-in, top 2s ease-in; pointer-events: none; filter: drop-shadow(0 0 10px #f1c40f);
             animation: spin 1s linear infinite;
         }
 
         /* --- СТИЛИ ЩИТА И ЗДОРОВЬЯ --- */
         #playerHpContainer {
-            position: absolute; top: 15px; left: 40px;
-            display: flex; gap: 5px; z-index: 203;
+            position: absolute; top: 20px; left: 20px;
+            display: flex; align-items: center; gap: 15px; z-index: 203;
         }
+        #pauseBtn {
+            background: rgba(0,0,0,0.6); border: 2px solid #fff; border-radius: 10px;
+            color: white; font-size: 20px; width: 45px; height: 45px;
+            cursor: pointer; display: flex; justify-content: center; align-items: center;
+            transition: 0.2s; padding: 0;
+        }
+        #pauseBtn:hover { background: #f1c40f; border-color: #f1c40f; }
+        #heartsBox { display: flex; gap: 5px; }
+
         .heart { font-size: 24px; transition: 0.3s; filter: drop-shadow(0 0 5px red); }
         
         #shieldContainer {
-            position: absolute; bottom: 15%; left: 3%; 
+            position: absolute; bottom: 20px; left: 20px; 
             display: flex; flex-direction: column; align-items: center; z-index: 205;
         }
         #shieldBtn {
@@ -228,7 +266,24 @@
             animation: spin 1s linear infinite;
         }
 
+        /* --- КНОПКА ДОБИТЬ И ВИДЕО УЛЬТИМЕЙТА --- */
+        #finishHimOverlay {
+            display: none; justify-content: center; align-items: center; z-index: 5005; background: rgba(0,0,0,0.5);
+        }
+        #finishHimBtn {
+            background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; font-size: 40px; padding: 20px 60px; 
+            border: 3px solid #fff; box-shadow: 0 0 30px #e74c3c; animation: pulseRed 1s infinite;
+        }
+        #videoOverlay {
+            display: none; z-index: 6000; background: #000;
+        }
+        #ultimateVideo {
+            width: 100%; height: 100%; object-fit: cover;
+        }
+
+        @keyframes blink { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
         @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes pulseRed { 0% { transform: scale(1); box-shadow: 0 0 20px #e74c3c; } 50% { transform: scale(1.1); box-shadow: 0 0 50px #e74c3c; } 100% { transform: scale(1); box-shadow: 0 0 20px #e74c3c; } }
         h2 { display: none; }
     </style>
 </head>
@@ -247,9 +302,13 @@
 
     <div id="debugMenu">
         <span class="debug-label">Debug:</span>
+        <button class="debug-btn" onclick="location.reload()">Сброс</button>
         <button class="debug-btn" onclick="debugGoTo('start')">Старт</button>
         <button class="debug-btn" onclick="debugGoTo('field')">Поле</button>
+        <button class="debug-btn" onclick="debugPassField()">Пройти поле</button>
         <button class="debug-btn" onclick="debugGoTo('boss')">Босс</button>
+        <button class="debug-btn" onclick="debugPassBoss()">Пройти босса</button>
+        <button class="debug-btn" onclick="debugLoseBoss()">Проиграл боссу</button>
     </div>
 
     <!-- МОБИЛЬНАЯ РАМКА (IPHONE) -->
@@ -316,11 +375,11 @@
 
         <div id="feedbackOverlay" class="screen-overlay"><img id="feedbackImage" src="" alt="Реакция"></div>
 
-        <!-- ОКНО ПЕРЕХОДА -->
-        <div id="transitionOverlay" class="screen-overlay">
-            <div class="quiz-box">
-                <h3 style="font-size: 20px; line-height: 1.5;">Ура мы собрали все предметы!<br>Теперь мы можем победить босса!</h3>
-                <button class="action-btn" onclick="goToBossFromTransition()" style="font-size: 18px; padding: 10px 40px; margin-top: 10px;">В БОЙ!</button>
+        <!-- НОВАЯ СИСТЕМА ДИАЛОГОВ -->
+        <div id="dialogueOverlay" class="screen-overlay">
+            <div class="dialogue-container" onclick="nextDialogue()">
+                <div id="dialogueText"></div>
+                <div class="dialogue-hint">Нажми, чтобы продолжить ▼</div>
             </div>
         </div>
 
@@ -330,9 +389,12 @@
             <div class="arena-ground"></div>
             
             <div id="playerHpContainer">
-                <span class="heart">❤️</span>
-                <span class="heart">❤️</span>
-                <span class="heart">❤️</span>
+                <button id="pauseBtn" onclick="togglePause()">⏸️</button>
+                <div id="heartsBox">
+                    <span class="heart">❤️</span>
+                    <span class="heart">❤️</span>
+                    <span class="heart">❤️</span>
+                </div>
             </div>
 
             <div id="shieldContainer">
@@ -343,7 +405,16 @@
             <img id="arenaPlayer" src="images/Julia.png" alt="Player">
             <img id="arenaBoss" src="images/boss.png?v=3" alt="Boss" onclick="damageBoss(event)">
             
-            <p style="position: absolute; top: 15px; right: 40px; font-size: 14px; opacity: 0.8; z-index: 203;">Жми на босса, чтобы бросать предмет!</p>
+            <p id="bossHintText">Жми на босса, чтобы бросать предмет!</p>
+        </div>
+
+        <!-- ОКНА ДОБИВАНИЯ И ВИДЕО -->
+        <div id="finishHimOverlay" class="screen-overlay">
+            <button id="finishHimBtn" class="action-btn">ДОБИТЬ!</button>
+        </div>
+
+        <div id="videoOverlay" class="screen-overlay">
+            <video id="ultimateVideo" src="images/ultimate.mp4" playsinline></video>
         </div>
 
     </div>
@@ -390,17 +461,28 @@
             document.getElementById('quizOverlay').style.display = 'none';
             document.getElementById('feedbackOverlay').style.display = 'none';
             document.getElementById('victoryOverlay').style.display = 'none';
-            document.getElementById('transitionOverlay').style.display = 'none';
+            document.getElementById('dialogueOverlay').style.display = 'none';
+            document.getElementById('finishHimOverlay').style.display = 'none';
+            document.getElementById('videoOverlay').style.display = 'none';
+            
+            const vid = document.getElementById('ultimateVideo');
+            vid.pause();
+            vid.currentTime = 0;
             
             bgMusic.play().catch(e=>{}); isPaused = false;
+            document.getElementById('pauseBtn').innerText = "⏸️";
 
             if (targetScreen === 'start') { document.getElementById('startScreen').style.display = 'flex'; gameStarted = false; } 
-            else if (targetScreen === 'field') { document.getElementById('gameUI').style.display = 'block'; if (!gameStarted) { gameStarted = true; if (imagesLoaded === totalImages) requestAnimationFrame(gameLoop); } } 
+            else if (targetScreen === 'field') { 
+                document.getElementById('gameUI').style.display = 'block'; 
+                document.getElementById('tracker').style.display = 'block';
+                document.getElementById('restartBtn').style.display = 'block';
+                if (!gameStarted) { gameStarted = true; if (imagesLoaded === totalImages) requestAnimationFrame(gameLoop); } 
+            } 
             else if (targetScreen === 'boss') {
                 document.getElementById('bossOverlay').style.display = 'flex';
                 if (!gameStarted) { gameStarted = true; if (imagesLoaded === totalImages) requestAnimationFrame(gameLoop); }
                 
-                // Очищаем интервалы
                 if(bossInterval) clearInterval(bossInterval); 
                 if(bossMovementInterval) clearInterval(bossMovementInterval);
 
@@ -408,9 +490,44 @@
                 
                 let bossChar = document.getElementById('arenaBoss');
                 bossChar.style.transform = 'translateY(0) rotate(0deg)'; bossChar.style.opacity = '1';
+                bossChar.style.bottom = '12%';
                 
                 startBossFight();
             }
+        }
+
+        function debugPassField() {
+            document.getElementById('titleScreen').style.display = 'none';
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('bossOverlay').style.display = 'none';
+            document.getElementById('gameUI').style.display = 'block'; 
+            score = 3;
+            scoreElement.innerText = score + " / " + maxScore;
+            isPaused = true;
+            isPlayerHappy = true; // Счастливая анимация при сборе вещей
+            setTimeout(() => {
+                showDialogue("Ура, мы собрали все предметы!\nТеперь у нас достаточно сил, чтобы победить босса!", () => {
+                    debugGoTo('boss');
+                });
+            }, 500);
+        }
+
+        function debugPassBoss() {
+            debugGoTo('boss');
+            bossHp = 0;
+            updateBossSkulls();
+            clearInterval(bossInterval);
+            clearInterval(bossMovementInterval);
+            document.getElementById('finishHimOverlay').style.display = 'flex';
+        }
+
+        function debugLoseBoss() {
+            debugGoTo('boss');
+            clearInterval(bossInterval);
+            clearInterval(bossMovementInterval);
+            showDialogue("Ничего страшного! Попробуй еще раз!\nАктивируй щит, чтобы избежать урона!", () => {
+                startBossFight();
+            });
         }
 
         document.getElementById('rulesButton').addEventListener('click', () => {
@@ -420,9 +537,53 @@
 
         document.getElementById('playButton').addEventListener('click', () => {
             document.getElementById('startScreen').style.display = 'none'; document.getElementById('gameUI').style.display = 'block';
+            document.getElementById('tracker').style.display = 'block';
+            document.getElementById('restartBtn').style.display = 'block';
             gameStarted = true; bgMusic.play().catch(e=>{});
             if (imagesLoaded === totalImages) requestAnimationFrame(gameLoop);
         });
+
+        // --- СИСТЕМА ДИАЛОГОВ ---
+        let dialogueFullText = "";
+        let dialogueCurrentIndex = 0;
+        let dialogueTypingInterval;
+        let isDialogueTyping = false;
+        let onDialogueComplete = null;
+
+        function showDialogue(text, callback) {
+            document.getElementById('dialogueOverlay').style.display = 'flex';
+            document.getElementById('dialogueText').innerText = "";
+            
+            // Прячем интерфейс на время диалога
+            document.getElementById('tracker').style.display = 'none';
+            document.getElementById('restartBtn').style.display = 'none';
+            
+            dialogueFullText = text;
+            dialogueCurrentIndex = 0;
+            isDialogueTyping = true;
+            onDialogueComplete = callback;
+
+            dialogueTypingInterval = setInterval(() => {
+                document.getElementById('dialogueText').innerText += dialogueFullText.charAt(dialogueCurrentIndex);
+                dialogueCurrentIndex++;
+                if (dialogueCurrentIndex >= dialogueFullText.length) {
+                    clearInterval(dialogueTypingInterval);
+                    isDialogueTyping = false;
+                }
+            }, 30);
+        }
+
+        function nextDialogue() {
+            if (isDialogueTyping) {
+                clearInterval(dialogueTypingInterval);
+                document.getElementById('dialogueText').innerText = dialogueFullText;
+                isDialogueTyping = false;
+            } else {
+                document.getElementById('dialogueOverlay').style.display = 'none';
+                if (onDialogueComplete) onDialogueComplete();
+            }
+        }
+
 
         // --- ИГРОВОЕ ПОЛЕ ---
         const canvas = document.getElementById('gameCanvas'); const ctx = canvas.getContext('2d');
@@ -444,14 +605,26 @@
         let blackBall = { x: 4, y: 0 }; let quizSolved = false;
         let obstacles = [{x: 3, y: 3}, {x: 5, y: 3}, {x: 3, y: 5}, {x: 5, y: 5}, {x: 4, y: 8}];
         let particles = []; let targetMovePos = null; let moveTimer = 0;
+        let isPlayerHappy = false;
 
-        const images = {}; let imagesLoaded = 0; const totalImages = 4;
+        const images = {}; let imagesLoaded = 0; const totalImages = 5; // Увеличен лимит для загрузки Happy модельки
+        
         function loadImage(name, src) {
             images[name] = new Image(); images[name].src = src;
             images[name].onload = () => { imagesLoaded++; if (imagesLoaded === totalImages && gameStarted) requestAnimationFrame(gameLoop); };
+            images[name].onerror = () => { 
+                console.warn("Не удалось найти картинку: " + src); 
+                imagesLoaded++; 
+                if (imagesLoaded === totalImages && gameStarted) requestAnimationFrame(gameLoop); 
+            };
         }
-        loadImage('block', 'images/block.png'); loadImage('player', 'images/Julia.png');
-        loadImage('crown', 'images/Crown.png'); loadImage('rock', 'images/winterspringfrostsaberrock.png');
+        
+        // --- ЗАГРУЗКА РЕСУРСОВ ---
+        loadImage('block', 'images/textures/block.png'); 
+        loadImage('player', 'images/Julia.png');
+        loadImage('playerHappy', 'images/model/Julia/Julia%20-%20Happy.png'); // Загрузка Happy модельки с правильным URL
+        loadImage('crown', 'images/Crown.png'); 
+        loadImage('rock', 'images/textures/winterspringfrostsaberrock.png');
 
         function toScreen(x, y) { return { x: (x - y) * (tileW / 2), y: (x + y) * (tileH / 2) }; }
         function spawnParticles(gridX, gridY, color) {
@@ -470,13 +643,13 @@
         function checkWin() { 
             if (score >= maxScore) { 
                 isPaused = true; 
-                setTimeout(() => { document.getElementById('transitionOverlay').style.display = 'flex'; }, 1000); 
+                isPlayerHappy = true;
+                setTimeout(() => { 
+                    showDialogue("Ура, мы собрали все предметы!\nТеперь у нас достаточно сил, чтобы победить босса!", () => {
+                        debugGoTo('boss'); 
+                    });
+                }, 1000); 
             } 
-        }
-
-        function goToBossFromTransition() {
-            document.getElementById('transitionOverlay').style.display = 'none';
-            debugGoTo('boss'); 
         }
 
         function checkInteractions() {
@@ -515,7 +688,15 @@
                     if (dist > 3) continue; 
                     let alpha = 1.0; if (dist === 2) alpha = 0.8; if (dist === 3) alpha = 0.3;
                     ctx.globalAlpha = alpha; const p = toScreen(x, y);
-                    if (!obstacles.find(o => o.x === x && o.y === y)) ctx.drawImage(images['block'], p.x - tileW / 2, p.y); 
+                    
+                    if (!obstacles.find(o => o.x === x && o.y === y)) {
+                        if(images['block'] && images['block'].complete && images['block'].naturalWidth !== 0) {
+                            ctx.drawImage(images['block'], p.x - 49.5, p.y, 99, 85); 
+                        } else {
+                            ctx.fillStyle = '#444';
+                            ctx.fillRect(p.x - 49.5, p.y, 99, 85);
+                        }
+                    }
                     ctx.globalAlpha = 1.0;
                 }
             }
@@ -527,11 +708,33 @@
                     let alpha = 1.0; if (dist === 2) alpha = 0.8; if (dist === 3) alpha = 0.3;
                     ctx.globalAlpha = alpha; const p = toScreen(x, y);
 
-                    if (obstacles.find(o => o.x === x && o.y === y)) ctx.drawImage(images['rock'], p.x - 96, p.y - 100, 192, 192);
+                    if (obstacles.find(o => o.x === x && o.y === y)) {
+                        if(images['rock'] && images['rock'].complete && images['rock'].naturalWidth !== 0) {
+                            ctx.drawImage(images['rock'], p.x - 96, p.y - 100, 192, 192);
+                        }
+                    }
                     if (x === blackBall.x && y === blackBall.y && !quizSolved) { ctx.fillStyle = "#111"; ctx.beginPath(); ctx.arc(p.x, p.y + 15, 20, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = "#555"; ctx.beginPath(); ctx.arc(p.x - 5, p.y + 10, 5, 0, Math.PI * 2); ctx.fill(); }
                     if (x === crown.x && y === crown.y && !crownCollected) ctx.drawImage(images['crown'], p.x - 32, p.y - 60, 64, 64);
                     if (x === apple.x && y === apple.y && apple.alpha > 0) { ctx.save(); ctx.globalAlpha = apple.alpha * alpha; ctx.fillStyle = "#ff4d4d"; ctx.beginPath(); ctx.arc(p.x, p.y + 20, 15, 0, Math.PI * 2); ctx.fill(); ctx.restore(); }
-                    if (x === player.x && y === player.y) ctx.drawImage(images['player'], p.x - 64, p.y - 188, 128, 220); 
+                    
+                    if (x === player.x && y === player.y) {
+                        // Отрисовка объемной светящейся золотой ауры (эллипса) под персонажем
+                        ctx.save();
+                        ctx.strokeStyle = "rgba(241, 196, 15, 0.4)";
+                        ctx.lineWidth = 3;
+                        ctx.shadowColor = "rgba(241, 196, 15, 0.8)";
+                        ctx.shadowBlur = 10;
+                        ctx.beginPath();
+                        ctx.ellipse(p.x, p.y + 35, 40, 20, 0, 0, Math.PI * 2);
+                        ctx.stroke();
+                        ctx.fillStyle = "rgba(241, 196, 15, 0.15)";
+                        ctx.fill();
+                        ctx.restore();
+
+                        // Отрисовка модельки игрока
+                        let currentSprite = (isPlayerHappy && images['playerHappy'] && images['playerHappy'].complete) ? images['playerHappy'] : images['player'];
+                        ctx.drawImage(currentSprite, p.x - 64, p.y - 188, 128, 220); 
+                    }
                     ctx.globalAlpha = 1.0;
                 }
             }
@@ -561,18 +764,24 @@
         // --- ЛОГИКА 2D БОССА ---
         let bossHp = 10; 
         let bossInterval; 
-        let bossMovementInterval; // Глобальный интервал для уворотов
+        let bossMovementInterval;
         let canShoot = true; 
         
         let playerHp = 3;
         let isShieldActive = false;
         let shieldOnCooldown = false;
 
+        function togglePause() {
+            if (document.getElementById('bossOverlay').style.display === 'flex') {
+                isPaused = !isPaused;
+                document.getElementById('pauseBtn').innerText = isPaused ? "▶️" : "⏸️";
+            }
+        }
+
         function updateBossSkulls() {
             const container = document.getElementById('bossSkullsContainer');
-            // Компактный формат 💀 × 10
-            container.innerHTML = '<span style="font-size: 36px; filter: drop-shadow(0 0 5px red);">💀</span>' +
-                                  '<span style="font-size: 28px; font-weight: 900; color: #fff; margin-left: 10px;"> × ' + bossHp + '</span>';
+            container.innerHTML = '<span style="font-size: 30px; filter: drop-shadow(0 0 5px red);">💀</span>' +
+                                  '<span style="font-size: 24px; font-weight: 900; color: #fff; margin-left: 10px;"> × ' + bossHp + '</span>';
         }
 
         function updateHearts() {
@@ -584,7 +793,7 @@
         }
 
         function activateShield() {
-            if (isShieldActive || shieldOnCooldown || playerHp <= 0 || bossHp <= 0) return;
+            if (isPaused || isShieldActive || shieldOnCooldown || playerHp <= 0 || bossHp <= 0) return;
             
             isShieldActive = true;
             shieldOnCooldown = true;
@@ -610,8 +819,8 @@
                 setTimeout(() => {
                     shieldOnCooldown = false;
                     if (playerHp > 0 && bossHp > 0) { btn.disabled = false; btn.innerText = "🛡️"; }
-                }, 500); // 0.5 секунды на откат
-            }, 1000); // 1 секунда щит активен
+                }, 500); 
+            }, 1000); 
         }
 
         function shootBossProjectile() {
@@ -628,7 +837,6 @@
             const pRect = playerImg.getBoundingClientRect();
             const wRect = wrapper.getBoundingClientRect();
             
-            // Расчет с учетом мобильной рамки
             const startX = bRect.left - wRect.left + bRect.width * 0.1; 
             const startY = bRect.top - wRect.top + bRect.height * 0.4;
             const endX = pRect.left - wRect.left + pRect.width / 2 - 15; 
@@ -653,7 +861,6 @@
                     document.getElementById('bossOverlay').appendChild(blockText);
                     setTimeout(() => blockText.remove(), 600);
                 } else {
-                    // Урон отключен для тестов, оставляем только визуальный эффект попадания (красное мигание)
                     playerImg.style.filter = 'brightness(0.5) sepia(1) hue-rotate(-50deg) saturate(5) drop-shadow(0 0 20px red)';
                     setTimeout(() => { if (playerHp > 0) playerImg.style.filter = 'drop-shadow(0 5px 10px rgba(0,0,0,0.5))'; }, 300);
                 }
@@ -663,6 +870,8 @@
         function startBossFight() {
             playerHp = 3; updateHearts(); isShieldActive = false; shieldOnCooldown = false;
             bossHp = 10; updateBossSkulls();
+            isPaused = false;
+            document.getElementById('pauseBtn').innerText = "⏸️";
             
             let pImg = document.getElementById('arenaPlayer');
             pImg.src = 'images/Julia.png'; pImg.style.transform = 'rotate(0deg) translateY(0)'; pImg.style.opacity = '1';
@@ -674,35 +883,43 @@
             let bossChar = document.getElementById('arenaBoss');
             bossChar.style.bottom = '12%';
 
-            // Босс стреляет каждые 3 секунды
-            bossInterval = setInterval(() => { shootBossProjectile(); }, 3000);
+            bossInterval = setInterval(() => { 
+                if (!isPaused) shootBossProjectile(); 
+            }, 3000);
             
-            // Уворот: Босс меняет позицию по высоте каждые 3 секунды
             bossMovementInterval = setInterval(() => {
-                if (bossHp <= 0) return;
+                if (bossHp <= 0 || isPaused) return;
                 if (bossChar.style.bottom === '12%') {
-                    bossChar.style.bottom = '40%'; // Взлетает
+                    bossChar.style.bottom = '40%'; 
                 } else {
-                    bossChar.style.bottom = '12%'; // Опускается
+                    bossChar.style.bottom = '12%'; 
                 }
             }, 3000);
         }
 
         function damageBoss(e) {
-            if (bossHp <= 0 || !canShoot || document.querySelectorAll('.player-projectile').length >= 2) return;
+            if (isPaused || bossHp <= 0 || !canShoot || document.querySelectorAll('.player-projectile').length >= 2) return;
             canShoot = false; setTimeout(() => { canShoot = true; }, 1000); 
+
+            // Смена модельки на боевую стойку во время атаки
+            const playerImg = document.getElementById('arenaPlayer');
+            playerImg.src = 'images/model/Julia/Julia%20-%20Hit.png';
+            setTimeout(() => {
+                if (playerHp > 0 && !isShieldActive) {
+                    playerImg.src = 'images/Julia.png'; 
+                }
+            }, 500);
 
             let projectile = document.createElement('img');
             projectile.src = 'images/alch.png'; projectile.className = 'player-projectile';
             
-            const playerImg = document.getElementById('arenaPlayer');
             const wrapper = document.getElementById('mobile-wrapper');
             const pRect = playerImg.getBoundingClientRect();
             const wRect = wrapper.getBoundingClientRect();
             
             const startX = pRect.right - wRect.left - 20; 
             const startY = pRect.top - wRect.top + (pRect.height / 3);
-            const endX = e.clientX - wRect.left - 12; // -12 чтобы центрировать уменьшенный снаряд
+            const endX = e.clientX - wRect.left - 12; 
             const endY = e.clientY - wRect.top - 12;
 
             projectile.style.left = startX + 'px'; projectile.style.top = startY + 'px';
@@ -711,18 +928,15 @@
             projectile.style.left = endX + 'px'; projectile.style.top = endY + 'px';
 
             setTimeout(() => {
-                // Получаем актуальные координаты снаряда и босса в момент подлета
                 const projRect = projectile.getBoundingClientRect();
                 const bossChar = document.getElementById('arenaBoss');
                 const bossRect = bossChar.getBoundingClientRect();
                 
-                // Переопределяем wRect внутри таймаута на случай, если размер экрана менялся
                 const currentWRect = document.getElementById('mobile-wrapper').getBoundingClientRect();
                 
                 projectile.remove();
                 if (bossHp <= 0) return;
                 
-                // Проверяем, пересекаются ли квадраты (попали ли мы в босса)
                 const margin = 20;
                 const isHit = !(
                     projRect.right < bossRect.left + margin ||
@@ -742,11 +956,9 @@
                     if (bossHp <= 0) {
                         clearInterval(bossInterval); 
                         clearInterval(bossMovementInterval); 
-                        bossChar.style.transition = 'all 1s ease-in'; bossChar.style.transform = 'translateY(100vh) rotate(90deg)'; bossChar.style.opacity = '0';
-                        setTimeout(() => { document.getElementById('victoryOverlay').style.display = 'flex'; }, 2000);
+                        document.getElementById('finishHimOverlay').style.display = 'flex';
                     }
                 } else {
-                    // Босс увернулся! Показываем текст "УВОРОТ!"
                     let missText = document.createElement('div');
                     missText.innerText = "УВОРОТ!";
                     missText.style.position = 'absolute';
@@ -762,7 +974,7 @@
             }, 2000); 
         }
 
-        // --- УПРАВЛЕНИЕ ---
+        // --- УПРАВЛЕНИЕ С ОГРАНИЧЕНИЕМ ШАГА В 1 ПЛИТКУ ---
         canvas.addEventListener('pointerdown', (e) => {
             if (!gameStarted || isPaused) return;
             const rect = canvas.getBoundingClientRect();
@@ -773,7 +985,12 @@
             const sx = cx + cameraPos.x; const sy = cy + cameraPos.y - 40;
             const tw = tileW / 2; const th = tileH / 2;
             const gridX = Math.round((sx / tw + sy / th) / 2); const gridY = Math.round((sy / th - sx / tw) / 2);
-            if (isValidTile(gridX, gridY)) targetMovePos = { x: gridX, y: gridY }; 
+            
+            // Задано жесткое ограничение: шаг только на 1 клетку вокруг персонажа
+            const moveDistance = Math.abs(gridX - player.x) + Math.abs(gridY - player.y);
+            if (isValidTile(gridX, gridY) && moveDistance === 1) {
+                targetMovePos = { x: gridX, y: gridY }; 
+            }
         });
 
         document.getElementById('btnUp').addEventListener('pointerdown', () => { targetMovePos = null; movePlayer(0, -1); });
@@ -791,6 +1008,46 @@
         });
 
         document.getElementById('restartBtn').addEventListener('click', () => { location.reload(); });
+
+        // --- ЛОГИКА ДОБИВАНИЯ И УЛЬТИМЕЙТА ---
+        const vid = document.getElementById('ultimateVideo');
+
+        vid.addEventListener('error', () => {
+            console.warn("Видео ultimate.mp4 не найдено или заблокировано.");
+            document.getElementById('videoOverlay').style.display = 'none';
+            if(!isMuted && volumeSlider.value > 0) bgMusic.play();
+            document.getElementById('victoryOverlay').style.display = 'flex';
+        });
+
+        document.getElementById('finishHimBtn').addEventListener('click', () => {
+            document.getElementById('finishHimOverlay').style.display = 'none';
+            
+            let bossChar = document.getElementById('arenaBoss');
+            bossChar.style.transition = 'all 1s ease-in'; bossChar.style.transform = 'translateY(100vh) rotate(90deg)'; bossChar.style.opacity = '0';
+
+            const vidOverlay = document.getElementById('videoOverlay');
+            vidOverlay.style.display = 'flex';
+            
+            bgMusic.pause();
+
+            vid.load(); 
+            let playPromise = vid.play();
+            
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    console.warn("Автоплей заблокирован: ", error);
+                    vidOverlay.style.display = 'none';
+                    if(!isMuted && volumeSlider.value > 0) bgMusic.play();
+                    setTimeout(() => { document.getElementById('victoryOverlay').style.display = 'flex'; }, 500);
+                });
+            }
+        });
+
+        document.getElementById('ultimateVideo').addEventListener('ended', () => {
+            document.getElementById('videoOverlay').style.display = 'none';
+            document.getElementById('victoryOverlay').style.display = 'flex';
+            if(!isMuted && volumeSlider.value > 0) bgMusic.play(); 
+        });
     </script>
 </body>
 </html>
