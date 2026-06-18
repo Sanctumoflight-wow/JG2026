@@ -7,12 +7,6 @@
     <title>Calliope Game 2</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;900&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
     <style>
-        :root {
-            /* Логические переменные для гарантии пропорций */
-            --lvmin: min(100vw, 100vh);
-            --lvmax: max(100vw, 100vh);
-        }
-
         body { 
             font-family: 'Montserrat', sans-serif; 
             background-color: #111; 
@@ -21,60 +15,37 @@
             color: white; 
             overflow: hidden; 
             
+            /* Блокируем жесты браузера */
             touch-action: none; 
             user-select: none; 
             -webkit-user-select: none;
             overscroll-behavior: none;
         }
 
-        /* --- ГЛАВНЫЙ КОНТЕЙНЕР (УПРАВЛЯЕТ ПОВОРОТОМ) --- */
+        /* --- СУПЕР-КОНТЕЙНЕР (ВРАЩАЕТСЯ КАК ЕДИНОЕ ЦЕЛОЕ) --- */
         #game-container {
             position: absolute;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%);
-            width: var(--lvmax);
-            height: var(--lvmin);
-            background-color: #2c3e50; /* Сливается с фоном игры для устранения резких отступов */
-            overflow: hidden;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-        }
-
-        /* ЕСЛИ ТЕЛЕФОН ДЕРЖАТ ВЕРТИКАЛЬНО - ПОВОРАЧИВАЕМ ВСЁ НА 90 ГРАДУСОВ */
-        @media screen and (orientation: portrait) {
-            #game-container {
-                width: var(--lvmax);
-                height: var(--lvmin);
-                transform: translate(-50%, -50%) rotate(90deg);
-            }
-        }
-
-        /* --- АДАПТИВНЫЙ ИГРОВОЙ ЭКРАН --- */
-        #mobile-wrapper {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 100%;
-            height: 100%;
-            /* Идеально держит пропорции 852x393 */
-            max-width: calc(100% * (852 / 393)); 
-            max-height: calc(100% * (393 / 852));
-            aspect-ratio: 852 / 393;
-            background-color: #2c3e50;
-            overflow: hidden;
-            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+            gap: 15px; /* Отступ между панелью Debug и игрой */
+            transform-origin: center center;
+            transition: transform 0.2s ease-out;
         }
 
         /* --- DEBUG ПАНЕЛЬ --- */
         #debugMenu {
-            position: absolute; top: 0; left: 0; width: 100%; height: auto; min-height: 50px;
-            background: rgba(0, 0, 0, 0.85); border-bottom: 3px solid #f1c40f;
+            width: 852px; /* Фиксированная ширина под игру */
+            background: rgba(0, 0, 0, 0.85); 
+            border: 3px solid #f1c40f;
+            border-radius: 10px;
             display: flex; justify-content: center; align-items: center; gap: 8px; flex-wrap: wrap;
             z-index: 9999; backdrop-filter: blur(5px);
             padding: 8px; box-sizing: border-box;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
         }
         .debug-label { color: #f1c40f; font-weight: 900; text-transform: uppercase; font-size: 12px; }
         .debug-btn {
@@ -84,9 +55,43 @@
         }
         .debug-btn:hover { background: #f1c40f; color: #1a252f; border-color: #f1c40f; }
 
+        /* --- ИГРОВОЙ ЭКРАН (ЖЕСТКИЕ ПРОПОРЦИИ) --- */
+        #mobile-wrapper {
+            position: relative;
+            width: 852px; 
+            height: 393px;
+            background-color: #2c3e50;
+            border: 4px solid #111;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+        }
+
+        /* --- КНОПКА СВЕРНУТЬ (ПОЛНЫЙ ЭКРАН) --- */
+        #exitFullscreenBtn {
+            display: none; 
+            position: fixed; 
+            top: 15px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            z-index: 10005; 
+            background: rgba(0, 0, 0, 0.8); 
+            border: 2px solid #f1c40f; 
+            color: #f1c40f; 
+            border-radius: 10px; 
+            padding: 8px 20px; 
+            font-weight: 900; 
+            cursor: pointer; 
+            text-transform: uppercase;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.8);
+            transition: 0.2s;
+            backdrop-filter: blur(5px);
+        }
+        #exitFullscreenBtn:hover { background: #f1c40f; color: #111; }
+
         /* --- АУДИО КОНТРОЛЛЕР --- */
         #audioControls {
-            position: absolute; top: 60px; right: 20px; background: rgba(0, 0, 0, 0.7);
+            position: absolute; top: 15px; right: 15px; background: rgba(0, 0, 0, 0.7);
             padding: 8px 12px; border-radius: 15px; display: flex; align-items: center;
             gap: 10px; z-index: 9990; border: 2px solid #f1c40f; backdrop-filter: blur(5px);
         }
@@ -162,7 +167,7 @@
         #score { font-weight: 700; color: #f1c40f; margin-left: 5px; font-size: 18px; }
         #easterScore { font-weight: 700; color: #f1c40f; margin-left: 5px; font-size: 16px; }
         
-        canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: block; z-index: 1; }
+        canvas { position: absolute; top: 0; left: 0; background-color: #1a252f; z-index: 1; }
 
         /* КНОПКИ УПРАВЛЕНИЯ */
         #controls { 
@@ -375,6 +380,8 @@
 </head>
 <body>
 
+    <button id="exitFullscreenBtn">Свернуть</button>
+
     <audio id="bgMusic" loop>
         <source src="https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3" type="audio/mpeg">
         <source src="images/music.mp3" type="audio/mpeg">
@@ -385,7 +392,7 @@
         <source src="images/type.mp3" type="audio/mpeg">
     </audio>
 
-    <!-- СУПЕР-КОНТЕЙНЕР (ОБЕСПЕЧИВАЕТ ПОВОРОТ НА МОБИЛЬНЫХ) -->
+    <!-- СУПЕР-КОНТЕЙНЕР (ОБЕСПЕЧИВАЕТ ПОВОРОТ И МАСШТАБ КАК ЕДИНОЕ ЦЕЛОЕ) -->
     <div id="game-container">
         
         <!-- Панель Debug (Внутри контейнера, чтобы поворачивалась вместе с игрой) -->
@@ -401,21 +408,18 @@
             <button class="debug-btn" onclick="debugGoTo('boss')">Босс</button>
             <button class="debug-btn" onclick="debugPassBoss()">Пройти босса</button>
             <button class="debug-btn" onclick="debugLoseBoss()">Проиграл боссу</button>
-            
-            <!-- Интегрированная кнопка свернуть -->
-            <button id="exitFullscreenBtn" class="debug-btn" style="display: none; color: #f1c40f; border-color: #f1c40f;">Свернуть</button>
         </div>
 
-        <!-- Аудио Контроллер -->
-        <div id="audioControls">
-            <button id="muteBtn">🔊</button>
-            <button id="volDownBtn" class="vol-btn">-</button>
-            <span id="volDisplay">10%</span>
-            <button id="volUpBtn" class="vol-btn">+</button>
-        </div>
-
-        <!-- ИГРОВОЙ ЭКРАН -->
+        <!-- ИГРОВОЙ ЭКРАН (ЖЕСТКИЕ ПРОПОРЦИИ) -->
         <div id="mobile-wrapper">
+            
+            <!-- Аудио Контроллер внутри экрана игры для идеальной совместимости -->
+            <div id="audioControls">
+                <button id="muteBtn">🔊</button>
+                <button id="volDownBtn" class="vol-btn">-</button>
+                <span id="volDisplay">10%</span>
+                <button id="volUpBtn" class="vol-btn">+</button>
+            </div>
 
             <!-- ЭКРАН ПОБЕДЫ -->
             <div id="victoryOverlay" class="screen-overlay">
@@ -559,6 +563,72 @@
         let gameStarted = false;
         let isPaused = false; 
 
+        // --- УМНОЕ МАСШТАБИРОВАНИЕ И ПОВОРОТ ЭКРАНА ---
+        function resizeGame() {
+            const container = document.getElementById('game-container');
+            const debugMenu = document.getElementById('debugMenu');
+            const isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+            
+            const winW = window.innerWidth;
+            const winH = window.innerHeight;
+            
+            // Базовые размеры игры: 852x393 + высота панели Debug (если она не скрыта)
+            const baseW = 852;
+            const debugH = isFullscreen ? 0 : (debugMenu.offsetHeight || 50) + 15;
+            const baseH = 393 + debugH;
+            
+            let scale;
+            let isPortrait = winH > winW;
+            
+            if (isPortrait) {
+                // Если телефон вертикальный - вписываем игру боком (повернутую на 90 градусов)
+                scale = Math.min(winW / baseH, winH / baseW) * 0.95; 
+                container.style.transform = `translate(-50%, -50%) rotate(90deg) scale(${scale})`;
+            } else {
+                // Если телефон горизонтальный - вписываем как есть
+                scale = Math.min(winW / baseW, winH / baseH) * 0.95;
+                container.style.transform = `translate(-50%, -50%) scale(${scale})`;
+            }
+        }
+        window.addEventListener('resize', resizeGame);
+        
+        // --- ТОЧНЫЕ КООРДИНАТЫ КЛИКА ---
+        function getLocalCoords(clientX, clientY) {
+            const wrapper = document.getElementById('mobile-wrapper');
+            const rect = wrapper.getBoundingClientRect();
+            
+            const winW = window.innerWidth;
+            const winH = window.innerHeight;
+            const isPortrait = winH > winW;
+            
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            
+            const baseW = 852;
+            
+            const isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+            const debugH = isFullscreen ? 0 : (document.getElementById('debugMenu').offsetHeight || 50) + 15;
+            const containerBaseH = 393 + debugH;
+            
+            let scale = isPortrait 
+                ? Math.min(winW / containerBaseH, winH / baseW) * 0.95
+                : Math.min(winW / baseW, winH / containerBaseH) * 0.95;
+
+            let dx = clientX - centerX;
+            let dy = clientY - centerY;
+
+            let x, y;
+            if (isPortrait) {
+                // Корректируем клик для повернутого экрана
+                x = (dy / scale) + baseW / 2;
+                y = (-dx / scale) + 393 / 2;
+            } else {
+                x = (dx / scale) + baseW / 2;
+                y = (dy / scale) + 393 / 2;
+            }
+            return { x, y };
+        }
+
         // --- АУДИО ---
         const bgMusic = document.getElementById('bgMusic');
         const collectSound = document.getElementById('collectSound');
@@ -632,14 +702,19 @@
             }
         }
 
-        // Обновленная логика показа кнопок полного экрана
         function handleFullscreenChange() {
             const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
+            const exitBtn = document.getElementById('exitFullscreenBtn');
+            const debugMenu = document.getElementById('debugMenu');
+            
             if (isFullscreen) {
-                document.getElementById('exitFullscreenBtn').style.display = 'block';
+                exitBtn.style.display = 'block';
+                debugMenu.style.display = 'none'; // В полном экране дебаг пропадает
             } else {
-                document.getElementById('exitFullscreenBtn').style.display = 'none';
+                exitBtn.style.display = 'none';
+                debugMenu.style.display = 'flex'; // В обычном возвращается
             }
+            setTimeout(resizeGame, 50); // Пересчитываем масштаб окна
         }
 
         document.getElementById('exitFullscreenBtn').addEventListener('click', exitFullscreen);
@@ -923,6 +998,7 @@
             document.getElementById('tracker').style.display = 'block';
             gameStarted = true; if(!isMuted) bgMusic.play().catch(e=>{});
             if (imagesLoaded === totalImages) requestAnimationFrame(gameLoop);
+            setTimeout(resizeGame, 50); // Вызов перемасштабирования после скрытия окон
         });
 
         function toggleBossUI(show) {
@@ -1016,28 +1092,6 @@
             }
         }
 
-        // --- УТИЛИТА КООРДИНАТ ДЛЯ ПОРТРЕТНОГО РЕЖИМА ---
-        function getLocalCoords(clientX, clientY) {
-            const wrapper = document.getElementById('mobile-wrapper');
-            const rect = wrapper.getBoundingClientRect();
-            const isPortrait = window.matchMedia("(orientation: portrait)").matches;
-            
-            let x, y;
-            if (isPortrait) {
-                // В портретном режиме контейнер повернут на 90 градусов.
-                // rect.width - это визуальная ширина на экране (которая логически равна высоте 393)
-                // rect.height - это визуальная высота на экране (которая логически равна ширине 852)
-                const scale = rect.height / 852;
-                x = (clientY - rect.top) / scale;
-                y = (rect.right - clientX) / scale; 
-            } else {
-                const scale = rect.width / 852;
-                x = (clientX - rect.left) / scale;
-                y = (clientY - rect.top) / scale;
-            }
-            return { x, y };
-        }
-
         // --- ИГРОВОЕ ПОЛЕ ---
         const canvas = document.getElementById('gameCanvas'); const ctx = canvas.getContext('2d');
         const scoreElement = document.getElementById('score');
@@ -1057,20 +1111,20 @@
         ];
 
         // МАРШРУТ ПАСХАЛКИ ПО КРАСНОЙ ЛИНИИ ОТ КОРОНЫ [0, 4]:
-        // 2 шага "Вверх" : [0, 3], [0, 2]
-        // 2 шага "Влево" : [-1, 2], [-2, 2]
-        // 2 шага "Вниз" : [-2, 3], [-2, 4] -> Финальный куб на X: -2, Y: 4
+        // 3 шага "Вверх" : [0, 3], [0, 2], [0, 1]
+        // 1 шаг "Влево" : [-1, 1]
+        // 1 шаг "Вниз" : [-1, 2] -> Финальный куб на X: -1, Y: 2
         const secretPath = [
-            {x: 0, y: 3}, {x: 0, y: 2},
-            {x: -1, y: 2}, {x: -2, y: 2},
-            {x: -2, y: 3}, {x: -2, y: 4}
+            {x: 0, y: 3}, {x: 0, y: 2}, {x: 0, y: 1},
+            {x: -1, y: 1}, 
+            {x: -1, y: 2}
         ];
 
         function isValidTile(x, y) { 
             if (x >= 0 && y >= 0 && x < mapSize && y < mapSize && mapLayout[y][x] === 1) return true;
             if (easterEggRevealed && secretPath.some(p => p.x === x && p.y === y)) return true;
-            // Разрешаем ходить по шорткату из одного блока [-1, 4], если пасхалка уже найдена
-            if (easterEggFound && y === 4 && x === -1) return true;
+            // Разрешаем ходить по шорткату из двух блоков [-1, 3] и [-1, 4], если пасхалка уже найдена
+            if (easterEggFound && x === -1 && (y === 3 || y === 4)) return true;
             return false; 
         }
 
@@ -1164,7 +1218,8 @@
                 }, { bgImage: 'images/dialogs/Father.png' });
             }
 
-            if (easterEggRevealed && !easterEggFound && player.x === -2 && player.y === 4) {
+            // ПРОВЕРКА НА ПАСХАЛКУ
+            if (easterEggRevealed && !easterEggFound && player.x === -1 && player.y === 2) {
                 isPaused = true; targetMovePos = null;
                 showDialogue("Ха-ха, а ты гений!", () => {
                     easterEggFound = true; 
@@ -1199,6 +1254,7 @@
             const cameraPos = toScreen(player.x, player.y);
             ctx.save(); ctx.translate(canvas.width / 2, canvas.height / 2); ctx.scale(zoom, zoom); ctx.translate(-cameraPos.x, -cameraPos.y + 40); 
 
+            // Отрисовываем более широкую зону, чтобы охватить все пасхалки
             for (let y = -2; y < mapSize + 2; y++) {
                 for (let x = -4; x < mapSize + 2; x++) {
                     if (!isValidTile(x, y)) continue;
@@ -1207,8 +1263,8 @@
                     let alpha = 1.0; if (dist === 2) alpha = 0.8; if (dist === 3) alpha = 0.3;
                     ctx.globalAlpha = alpha; const p = toScreen(x, y);
                     
-                    // Куб пасхалки или куб шортката (он 1)
-                    let isSecretCube = (easterEggRevealed && x === -2 && y === 4) || (easterEggFound && y === 4 && x === -1);
+                    // Куб пасхалки или кубы шортката
+                    let isSecretCube = (easterEggRevealed && x === -1 && y === 2) || (easterEggFound && x === -1 && (y === 3 || y === 4));
                     let isRegularBlock = (x >= 0 && y >= 0 && x < mapSize && y < mapSize && mapLayout[y][x] === 1);
 
                     if (!obstacles.find(o => o.x === x && o.y === y)) {
@@ -1297,6 +1353,9 @@
             ctx.globalAlpha = 1.0; ctx.restore(); 
         }
 
+        // Запуск первой инициализации масштаба при загрузке скрипта
+        resizeGame();
+
         function gameLoop() { if (!gameStarted) return; update(); drawGame(); requestAnimationFrame(gameLoop); }
 
         // --- ЛОГИКА 2D БОССА ---
@@ -1372,7 +1431,6 @@
             let projectile = document.createElement('div');
             projectile.className = 'boss-projectile';
             
-            // Задаем строгие координаты старта и конца в пространстве 852x393
             const startX = 722; 
             const startY = 258; 
             const endX = 118; 
@@ -1483,7 +1541,6 @@
                 projectile.remove();
                 if (bossHp <= 0) return;
                 
-                // Проверяем дистанцию до центра босса (722, 258)
                 const dist = Math.hypot(endX - 722, endY - 258);
                 const isHit = dist < 120; // 120px радиус попадания
 
@@ -1518,13 +1575,17 @@
         }
 
         // --- УПРАВЛЕНИЕ НА КАРТЕ ---
+        // Используем offset, так как они всегда верны относительно самого канваса!
         canvas.addEventListener('pointerdown', (e) => {
             if (!gameStarted || isPaused) return;
-            const localCoords = getLocalCoords(e.clientX, e.clientY);
-            const cameraPos = toScreen(player.x, player.y);
             
-            let cx = (localCoords.x - canvas.width / 2) / zoom; 
-            let cy = (localCoords.y - canvas.height / 2) / zoom;
+            // Получаем точные пиксели внутри канваса, игнорируя повороты и масштабирование
+            const mouseX = e.offsetX / zoom;
+            const mouseY = e.offsetY / zoom;
+            
+            const cameraPos = toScreen(player.x, player.y);
+            let cx = mouseX - canvas.width / 2; 
+            let cy = mouseY - canvas.height / 2;
             const sx = cx + cameraPos.x; const sy = cy + cameraPos.y - 40;
             const tw = tileW / 2; const th = tileH / 2;
             const gridX = Math.round((sx / tw + sy / th) / 2); 
