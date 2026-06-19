@@ -334,7 +334,7 @@
         .heart { font-size: 24px; transition: 0.3s; filter: drop-shadow(0 0 5px red); }
         
         #shieldContainer {
-            position: absolute; bottom: 20px; left: 20px; 
+            position: absolute; bottom: 25px; left: 20px; /* Чуть приподнято, чтобы полоска влезла */
             display: flex; flex-direction: column; align-items: center; z-index: 205;
         }
         #shieldBtn {
@@ -344,6 +344,7 @@
             cursor: pointer; transition: 0.2s; 
             box-shadow: 0 5px 15px rgba(52, 152, 219, 0.5);
             display: flex; justify-content: center; align-items: center; padding: 0; font-size: 38px;
+            position: relative;
         }
         #shieldBtn:active { transform: scale(0.95); }
         #shieldBtn:disabled { filter: grayscale(100%) brightness(0.5); cursor: not-allowed; box-shadow: none; }
@@ -355,8 +356,10 @@
             animation: shieldPulse 0.5s infinite alternate;
         }
         
+        /* Полоска теперь абсолютно спозиционирована снизу, чтобы не сдвигать иконку! */
         #shieldBarBg {
-            width: 60px; height: 8px; background: rgba(0,0,0,0.7); border-radius: 4px; margin-top: 5px;
+            width: 60px; height: 8px; background: rgba(0,0,0,0.7); border-radius: 4px;
+            position: absolute; bottom: -12px;
             overflow: hidden; display: none; border: 1px solid #fff;
         }
         #shieldBar { width: 100%; height: 100%; background: #f1c40f; }
@@ -587,7 +590,8 @@
             'juliaHit': 'images/model/Julia/Julia_Hit.png',
             'alch': 'images/alch.png',
             'divineShield': 'images/Divine_Shield.jpg',
-            'arrow': 'images/Arrow.jpg'
+            'arrow': 'images/Arrow.jpg',
+            'fieldBg': 'images/field_bg.jpg' // <-- Добавлено для фона поля
         };
 
         const totalAssets = Object.keys(allAssets).length;
@@ -796,7 +800,7 @@
             
             // Возобновляем видео заставки, если нужно
             document.getElementById('menuVideo').play().catch(e=>{});
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.clearRect(0, 0, 852, 393);
         }
 
         playButton.addEventListener('pointerdown', (e) => {
@@ -1218,6 +1222,15 @@
 
         function drawGame() {
             ctx.clearRect(0, 0, 852, 393); // Очищаем по базовым координатам
+            
+            // Отрисовка фона арены (статика)
+            if (images['fieldBg'] && images['fieldBg'].complete) {
+                ctx.drawImage(images['fieldBg'], 0, 0, 852, 393);
+            } else {
+                ctx.fillStyle = '#2c3e50';
+                ctx.fillRect(0, 0, 852, 393);
+            }
+            
             const cameraPos = toScreen(player.x, player.y);
             
             ctx.save(); 
