@@ -1107,19 +1107,19 @@
 
         // МАРШРУТ ПАСХАЛКИ ПО КРАСНОЙ ЛИНИИ ОТ КОРОНЫ [0, 4]:
         // 3 шага "Вверх" : [0, 3], [0, 2], [0, 1]
-        // 3 шага "Влево" : [-1, 1], [-2, 1], [-3, 1]
-        // 3 шага "Вниз" : [-3, 2], [-3, 3], [-3, 4] -> Финальный куб на X: -3, Y: 4
+        // 1 шаг "Влево" : [-1, 1]
+        // 1 шаг "Вниз" : [-1, 2] -> Финальный куб на X: -1, Y: 2
         const secretPath = [
             {x: 0, y: 3}, {x: 0, y: 2}, {x: 0, y: 1},
-            {x: -1, y: 1}, {x: -2, y: 1}, {x: -3, y: 1},
-            {x: -3, y: 2}, {x: -3, y: 3}, {x: -3, y: 4}
+            {x: -1, y: 1}, 
+            {x: -1, y: 2}
         ];
 
         function isValidTile(x, y) { 
             if (x >= 0 && y >= 0 && x < mapSize && y < mapSize && mapLayout[y][x] === 1) return true;
             if (easterEggRevealed && secretPath.some(p => p.x === x && p.y === y)) return true;
-            // Шорткат из двух блоков [-1, 4] и [-2, 4] открывается после нахождения пасхалки
-            if (easterEggFound && y === 4 && (x === -1 || x === -2)) return true;
+            // Разрешаем ходить по шорткату из двух блоков [-1, 3] и [-1, 4], если пасхалка уже найдена
+            if (easterEggFound && x === -1 && (y === 3 || y === 4)) return true;
             return false; 
         }
 
@@ -1190,7 +1190,7 @@
             }
 
             // ПРОВЕРКА НА ПАСХАЛКУ
-            if (easterEggRevealed && !easterEggFound && player.x === -3 && player.y === 4) {
+            if (easterEggRevealed && !easterEggFound && player.x === -1 && player.y === 2) {
                 isPaused = true; targetMovePos = null;
                 showDialogue("Ха-ха, а ты гений!", () => {
                     easterEggFound = true; 
@@ -1224,7 +1224,7 @@
             ctx.clearRect(0, 0, 852, 393); // Очищаем по базовым координатам
             
             // Отрисовка фона арены (статика)
-            if (images['fieldBg'] && images['fieldBg'].complete) {
+            if (images['fieldBg'] && images['fieldBg'].complete && images['fieldBg'].naturalWidth !== 0) {
                 ctx.drawImage(images['fieldBg'], 0, 0, 852, 393);
             } else {
                 ctx.fillStyle = '#2c3e50';
@@ -1248,7 +1248,7 @@
                     ctx.globalAlpha = alpha; const p = toScreen(x, y);
                     
                     // Куб пасхалки или кубы шортката
-                    let isSecretCube = (easterEggRevealed && x === -3 && y === 4) || (easterEggFound && y === 4 && (x === -1 || x === -2));
+                    let isSecretCube = (easterEggRevealed && x === -1 && y === 2) || (easterEggFound && x === -1 && (y === 3 || y === 4));
                     let isRegularBlock = (x >= 0 && y >= 0 && x < mapSize && y < mapSize && mapLayout[y][x] === 1);
 
                     if (!obstacles.find(o => o.x === x && o.y === y)) {
@@ -1294,7 +1294,7 @@
                         }
                     }
                     if (x === crown.x && y === crown.y && !crownCollected) {
-                        if (images['crown']) ctx.drawImage(images['crown'], p.x - 32, p.y - 60, 64, 64);
+                        if (images['crown'] && images['crown'].complete && images['crown'].naturalWidth !== 0) ctx.drawImage(images['crown'], p.x - 32, p.y - 60, 64, 64);
                     }
                     
                     if (x === shieldObj.x && y === shieldObj.y && shieldObj.alpha > 0) { 
