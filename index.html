@@ -63,8 +63,9 @@
             transform-origin: center center;
         }
 
-        /* --- КНОПКА СВЕРНУТЬ / НА ВЕСЬ ЭКРАН --- */
-        #fullscreenToggleBtn {
+        /* --- КНОПКА СВЕРНУТЬ (ПОЛНЫЙ ЭКРАН) --- */
+        #exitFullscreenBtn {
+            display: none; 
             position: absolute; 
             top: 15px; 
             left: 50%; 
@@ -82,15 +83,15 @@
             transition: 0.2s;
             backdrop-filter: blur(5px);
         }
-        #fullscreenToggleBtn:hover { background: #f1c40f; color: #111; }
+        #exitFullscreenBtn:hover { background: #f1c40f; color: #111; }
 
         /* --- АУДИО КОНТРОЛЛЕР --- */
         #audioControls {
             position: absolute; top: 15px; right: 15px; background: rgba(0, 0, 0, 0.7);
             padding: 8px 12px; border-radius: 15px; display: flex; align-items: center;
-            gap: 10px; z-index: 9990; border: 2px solid #f1c40f; backdrop-filter: blur(5px);
+            z-index: 9990; border: 2px solid #f1c40f; backdrop-filter: blur(5px);
         }
-        #muteBtn { background: none; border: none; color: white; font-size: 20px; cursor: pointer; padding: 0; }
+        #muteBtn { background: none; border: none; color: white; font-size: 24px; cursor: pointer; padding: 0; line-height: 1;}
 
         .screen-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -134,6 +135,11 @@
         }
         .start-items-row .img-block img { 
             max-width: 100%; max-height: 100%; object-fit: contain; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.5)); 
+        }
+        .secret-item {
+            display: flex; justify-content: center; align-items: center;
+            font-size: 50px; color: #f1c40f; font-weight: 900; 
+            text-shadow: 0 0 15px rgba(241, 196, 15, 0.8);
         }
         .start-text {
             flex: 0 0 15%; display: flex; align-items: center; justify-content: center;
@@ -317,12 +323,11 @@
             color: white; border: 2px solid #fff; text-shadow: 0 2px 4px #000;
             cursor: pointer; transition: 0.2s; 
             box-shadow: 0 5px 15px rgba(52, 152, 219, 0.5);
-            display: flex; justify-content: center; align-items: center; padding: 0; font-size: 38px; /* Огромные часики */
+            display: flex; justify-content: center; align-items: center; padding: 0; font-size: 38px;
         }
         #shieldBtn:active { transform: scale(0.95); }
         #shieldBtn:disabled { filter: grayscale(100%) brightness(0.5); cursor: not-allowed; box-shadow: none; }
         
-        /* Свечение во время активности щита */
         #shieldBtn.shield-active {
             filter: grayscale(0%) brightness(1.2) !important;
             border-color: #f1c40f !important;
@@ -395,10 +400,11 @@
     </audio>
 
     <div id="game-container">
+        
         <!-- ИГРОВОЙ ЭКРАН (ЖЕСТКИЕ ПРОПОРЦИИ 852x393) -->
         <div id="mobile-wrapper">
             
-            <button id="fullscreenToggleBtn">На весь экран</button>
+            <button id="exitFullscreenBtn">Свернуть</button>
 
             <!-- Аудио Контроллер внутри экрана игры -->
             <div id="audioControls">
@@ -416,7 +422,7 @@
             <div id="titleScreen" class="screen-overlay">
                 <video id="menuVideo" src="images/Menu.mp4" autoplay loop muted playsinline style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1;"></video>
                 <div class="main-title">CALLIOPE GAME 2</div>
-                <button id="titlePlayBtn" class="start-btn" style="opacity: 0.5; pointer-events: none; padding: 10px 40px;">ЗАГРУЗКА ИГРЫ...</button>
+                <button id="playButton" class="start-btn" style="opacity: 0.5; pointer-events: none; padding: 10px 40px;">ЗАГРУЗКА ИГРЫ...</button>
             </div>
 
             <!-- СТАРТОВЫЙ ЭКРАН -->
@@ -426,6 +432,9 @@
                     <div class="img-block"><img src="images/Shoulders.png" alt="Наплечники"></div>
                     <div class="img-block"><img src="images/Shield.png" alt="Щит"></div>
                     <div class="img-block"><img src="images/Hammer.png" alt="Молот"></div>
+                    <div class="img-block secret-item">
+                        <span style="font-size: 40px; color: #f1c40f; font-weight: 900; text-shadow: 0 0 15px rgba(241, 196, 15, 0.8);">?</span>
+                    </div>
                 </div>
                 <div class="start-text">
                     Собери все предметы уровня
@@ -442,7 +451,7 @@
                     <div style="color: #f1c40f; font-size: 14px; margin-top: 5px;">Пасхалка: <span id="easterScore">0 / 1</span></div>
                 </div>
                 
-                <canvas id="gameCanvas" width="852" height="393"></canvas>
+                <canvas id="gameCanvas"></canvas>
                 
                 <div id="controls">
                     <div class="d-btn btn-up" id="btnUp"><img src="images/Arrow.jpg" class="arrow-icon arrow-up" alt="Up"></div>
@@ -456,8 +465,6 @@
             <div id="runeGameOverlay" class="screen-overlay">
                 <div id="runeDisplayArea"></div>
                 <p id="runeHint" style="color: white; font-size: 20px; font-weight: 700; margin-top: 30px; text-shadow: 0 2px 5px #000;">Запомни последовательность...</p>
-                <!-- Тихая кнопка отладки -->
-                <button onclick="debugPassRuneGame()" style="margin-top: 20px; background: transparent; border: 1px solid rgba(255,255,255,0.3); color: rgba(255,255,255,0.5); padding: 5px 15px; border-radius: 5px; cursor: pointer; font-family: 'Montserrat', sans-serif; transition: 0.2s;">Пройти игру (Debug)</button>
             </div>
 
             <!-- ТАРО МИНИ-ИГРА -->
@@ -523,9 +530,12 @@
     </div> 
 
     <script>
-        // --- МОЩНАЯ СИСТЕМА ЗАГРУЗКИ ---
+        let gameStarted = false;
+        let isPaused = false; 
+
+        // --- МОЩНАЯ СИСТЕМА ЗАГРУЗКИ (ПРЕДОТВРАЩАЕТ ЛАГИ) ---
         const images = {}; 
-        const preloadedImages = []; 
+        const preloadedImages = [];
 
         const allAssets = {
             'block': 'images/textures/block.png',
@@ -559,8 +569,7 @@
 
         const totalAssets = Object.keys(allAssets).length;
         let assetsLoadedCount = 0;
-        const titlePlayBtn = document.getElementById('titlePlayBtn');
-        const startFieldBtn = document.getElementById('startFieldBtn');
+        const playButton = document.getElementById('playButton');
 
         for (const [key, src] of Object.entries(allAssets)) {
             const img = new Image();
@@ -572,17 +581,13 @@
                 assetsLoadedCount++;
                 let percent = Math.round((assetsLoadedCount / totalAssets) * 100);
                 if (assetsLoadedCount < totalAssets) {
-                    if (titlePlayBtn) {
-                        titlePlayBtn.innerText = `ЗАГРУЗКА ИГРЫ (${percent}%)`;
-                        titlePlayBtn.style.opacity = '0.5';
-                        titlePlayBtn.style.pointerEvents = 'none';
-                    }
+                    playButton.innerText = `ЗАГРУЗКА ИГРЫ (${percent}%)`;
+                    playButton.style.opacity = '0.5';
+                    playButton.style.pointerEvents = 'none';
                 } else {
-                    if (titlePlayBtn) {
-                        titlePlayBtn.innerText = 'ИГРАТЬ';
-                        titlePlayBtn.style.opacity = '1';
-                        titlePlayBtn.style.pointerEvents = 'auto';
-                    }
+                    playButton.innerText = 'ИГРАТЬ';
+                    playButton.style.opacity = '1';
+                    playButton.style.pointerEvents = 'auto';
                 }
             };
         }
@@ -590,9 +595,6 @@
         const vidObj = document.createElement('video');
         vidObj.src = 'images/ultimate.mp4';
         vidObj.preload = 'auto';
-
-        let gameStarted = false;
-        let isPaused = false; 
 
         // --- ИДЕАЛЬНОЕ МАСШТАБИРОВАНИЕ (РАСТЯЖКА ПО КРАЯМ) ---
         function resizeGame() {
@@ -619,6 +621,30 @@
             return { x, y };
         }
 
+        // --- ИГРОВОЕ ПОЛЕ И HIGH-DPI CANVAS ---
+        const canvas = document.getElementById('gameCanvas'); 
+        const ctx = canvas.getContext('2d');
+        const scoreElement = document.getElementById('score');
+        const tileW = 128; const tileH = 64; const mapSize = 9; 
+        const zoom = 1.0; 
+
+        // Инициализация Canvas для поддержки Retina (Высокое качество текстур)
+        function initCanvas() {
+            const dpr = window.devicePixelRatio || 1;
+            const baseW = 852;
+            const baseH = 393;
+            
+            canvas.width = baseW * dpr;
+            canvas.height = baseH * dpr;
+            canvas.style.width = baseW + "px";
+            canvas.style.height = baseH + "px";
+            
+            ctx.scale(dpr, dpr);
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+        }
+        initCanvas();
+
         // --- АУДИО ---
         const bgMusic = document.getElementById('bgMusic');
         const collectSound = document.getElementById('collectSound');
@@ -634,20 +660,19 @@
                 typeSound.volume = 0;
                 muteBtn.innerText = '🔇';
             } else {
-                bgMusic.volume = 0.3; // Музыку делаем чуть тише эффектов
+                bgMusic.volume = 0.3; // Музыка на фоне
                 collectSound.volume = 1.0; 
                 typeSound.volume = 1.0;
                 muteBtn.innerText = '🔊';
             }
         }
 
-        if (muteBtn) {
-            muteBtn.addEventListener('pointerdown', (e) => {
-                e.preventDefault(); e.stopPropagation();
-                isMuted = !isMuted;
-                applyVolume();
-            });
-        }
+        // ИСПОЛЬЗУЕМ POINTERDOWN, ЧТОБЫ КЛИКИ ТОЧНО СРАБАТЫВАЛИ НА ТЕЛЕФОНЕ
+        muteBtn.addEventListener('pointerdown', (e) => {
+            e.preventDefault(); e.stopPropagation();
+            isMuted = !isMuted;
+            applyVolume();
+        });
 
         applyVolume();
         function playCollectSound() { collectSound.currentTime = 0; collectSound.play().catch(e=>{}); }
@@ -678,58 +703,43 @@
             }
         }
 
-        const fsBtn = document.getElementById('fullscreenToggleBtn');
-        if (fsBtn) {
-            fsBtn.addEventListener('click', () => {
-                const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
-                if (isFullscreen) {
-                    exitFullscreen();
-                } else {
-                    enterFullscreen();
-                }
-            });
-        }
-
         function handleFullscreenChange() {
             const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
-            if (fsBtn) {
-                if (isFullscreen) {
-                    fsBtn.innerText = 'Свернуть';
-                } else {
-                    fsBtn.innerText = 'На весь экран';
-                }
+            const exitBtn = document.getElementById('exitFullscreenBtn');
+            
+            if (isFullscreen) {
+                exitBtn.style.display = 'block';
+            } else {
+                exitBtn.style.display = 'none';
             }
             setTimeout(resizeGame, 50); 
             setTimeout(resizeGame, 500);
         }
 
+        document.getElementById('exitFullscreenBtn').addEventListener('click', exitFullscreen);
         document.addEventListener('fullscreenchange', handleFullscreenChange);
         document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
         document.addEventListener('mozfullscreenchange', handleFullscreenChange);
         document.addEventListener('MSFullscreenChange', handleFullscreenChange);
 
         // --- НАВИГАЦИЯ ---
-        if (titlePlayBtn) {
-            titlePlayBtn.addEventListener('click', () => {
-                enterFullscreen();
-                document.getElementById('menuVideo').pause();
-                document.getElementById('titleScreen').style.display = 'none';
-                document.getElementById('startScreen').style.display = 'flex';
-                if(!isMuted) bgMusic.play().catch(e=>{});
-            });
-        }
+        playButton.addEventListener('click', () => {
+            enterFullscreen();
+            document.getElementById('menuVideo').pause();
+            document.getElementById('titleScreen').style.display = 'none';
+            document.getElementById('startScreen').style.display = 'flex';
+            if(!isMuted) bgMusic.play().catch(e=>{});
+        });
 
-        if (startFieldBtn) {
-            startFieldBtn.addEventListener('click', () => {
-                enterFullscreen();
-                document.getElementById('startScreen').style.display = 'none'; 
-                document.getElementById('gameUI').style.display = 'block';
-                document.getElementById('tracker').style.display = 'block';
-                gameStarted = true; 
-                if (assetsLoadedCount >= totalAssets) requestAnimationFrame(gameLoop);
-                setTimeout(resizeGame, 50); 
-            });
-        }
+        document.getElementById('startFieldBtn').addEventListener('click', () => {
+            enterFullscreen();
+            document.getElementById('startScreen').style.display = 'none'; 
+            document.getElementById('gameUI').style.display = 'block';
+            document.getElementById('tracker').style.display = 'block';
+            gameStarted = true; 
+            if (assetsLoadedCount === totalAssets) requestAnimationFrame(gameLoop);
+            setTimeout(resizeGame, 50); 
+        });
 
         function toggleBossUI(show) {
             const displayValue = show ? '' : 'none';
@@ -761,21 +771,6 @@
         let expectedSequence = [];
         let playerSequence = [];
         let isRuneAnimating = false;
-
-        function debugPassRuneGame() {
-            if (!shieldCollected) {
-                document.getElementById('runeGameOverlay').style.display = 'none';
-                isRuneAnimating = false; 
-                showDialogue("Твоя память безупречна!\nСила рун теперь с нами.", () => {
-                    shieldCollected = true; 
-                    score++; scoreElement.innerText = score + " / " + maxScore; 
-                    playCollectSound(); 
-                    spawnParticles(shieldObj.x, shieldObj.y, '#3498db'); 
-                    
-                    isPaused = false; checkWin();
-                }, { bgImage: images['dialogAlina'].src });
-            }
-        }
 
         async function startRuneGame() {
             document.getElementById('runeGameOverlay').style.display = 'flex';
@@ -1000,12 +995,6 @@
             }
         }
 
-        // --- ИГРОВОЕ ПОЛЕ ---
-        const canvas = document.getElementById('gameCanvas'); const ctx = canvas.getContext('2d');
-        const scoreElement = document.getElementById('score');
-        const tileW = 128; const tileH = 64; const mapSize = 9; 
-        const zoom = 1.0; 
-
         const mapLayout = [
             [0,0,0, 1,1,1, 0,0,0], 
             [0,0,0, 1,1,1, 0,0,0], 
@@ -1020,19 +1009,19 @@
 
         // МАРШРУТ ПАСХАЛКИ ПО КРАСНОЙ ЛИНИИ ОТ КОРОНЫ [0, 4]:
         // 3 шага "Вверх" : [0, 3], [0, 2], [0, 1]
-        // 3 шага "Влево" : [-1, 1], [-2, 1], [-3, 1]
-        // 3 шага "Вниз" : [-3, 2], [-3, 3], [-3, 4] -> Финальный куб на X: -3, Y: 4
+        // 1 шаг "Влево" : [-1, 1]
+        // 1 шаг "Вниз" : [-1, 2] -> Финальный куб на X: -1, Y: 2
         const secretPath = [
             {x: 0, y: 3}, {x: 0, y: 2}, {x: 0, y: 1},
-            {x: -1, y: 1}, {x: -2, y: 1}, {x: -3, y: 1},
-            {x: -3, y: 2}, {x: -3, y: 3}, {x: -3, y: 4}
+            {x: -1, y: 1}, 
+            {x: -1, y: 2}
         ];
 
         function isValidTile(x, y) { 
             if (x >= 0 && y >= 0 && x < mapSize && y < mapSize && mapLayout[y][x] === 1) return true;
             if (easterEggRevealed && secretPath.some(p => p.x === x && p.y === y)) return true;
-            // Шорткат из двух блоков [-1, 4] и [-2, 4] открывается после нахождения пасхалки
-            if (easterEggFound && y === 4 && (x === -1 || x === -2)) return true;
+            // Разрешаем ходить по шорткату из двух блоков [-1, 3] и [-1, 4], если пасхалка уже найдена
+            if (easterEggFound && x === -1 && (y === 3 || y === 4)) return true;
             return false; 
         }
 
@@ -1103,7 +1092,7 @@
             }
 
             // ПРОВЕРКА НА ПАСХАЛКУ
-            if (easterEggRevealed && !easterEggFound && player.x === -3 && player.y === 4) {
+            if (easterEggRevealed && !easterEggFound && player.x === -1 && player.y === 2) {
                 isPaused = true; targetMovePos = null;
                 showDialogue("Ха-ха, а ты гений!", () => {
                     easterEggFound = true; 
@@ -1134,9 +1123,13 @@
         }
 
         function drawGame() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.clearRect(0, 0, 852, 393); // Очищаем по базовым координатам
             const cameraPos = toScreen(player.x, player.y);
-            ctx.save(); ctx.translate(canvas.width / 2, canvas.height / 2); ctx.scale(zoom, zoom); ctx.translate(-cameraPos.x, -cameraPos.y + 40); 
+            
+            ctx.save(); 
+            ctx.translate(852 / 2, 393 / 2); 
+            ctx.scale(zoom, zoom); 
+            ctx.translate(-cameraPos.x, -cameraPos.y + 40); 
 
             // Отрисовываем более широкую зону, чтобы охватить все пасхалки
             for (let y = -2; y < mapSize + 2; y++) {
@@ -1148,13 +1141,18 @@
                     ctx.globalAlpha = alpha; const p = toScreen(x, y);
                     
                     // Куб пасхалки или кубы шортката
-                    let isSecretCube = (easterEggRevealed && x === -3 && y === 4) || (easterEggFound && y === 4 && (x === -1 || x === -2));
+                    let isSecretCube = (easterEggRevealed && x === -1 && y === 2) || (easterEggFound && x === -1 && (y === 3 || y === 4));
                     let isRegularBlock = (x >= 0 && y >= 0 && x < mapSize && y < mapSize && mapLayout[y][x] === 1);
 
                     if (!obstacles.find(o => o.x === x && o.y === y)) {
                         if (isRegularBlock || isSecretCube) {
-                            if(images['block'] && images['block'].complete && images['block'].naturalWidth !== 0) {
-                                ctx.drawImage(images['block'], p.x - 49.5, p.y, 99, 85); 
+                            let blockImg = images['block'];
+                            if(blockImg && blockImg.complete && blockImg.naturalWidth !== 0) {
+                                // Идеальные пропорции отрисовки
+                                let bW = 100;
+                                let aspect = blockImg.naturalHeight / blockImg.naturalWidth;
+                                let bH = bW * aspect;
+                                ctx.drawImage(blockImg, p.x - bW/2, p.y - bH/2 + 25, bW, bH); 
                             } else {
                                 ctx.fillStyle = '#444';
                                 ctx.fillRect(p.x - 49.5, p.y, 99, 85);
@@ -1174,8 +1172,12 @@
                     ctx.globalAlpha = alpha; const p = toScreen(x, y);
 
                     if (obstacles.find(o => o.x === x && o.y === y)) {
-                        if(images['rock'] && images['rock'].complete && images['rock'].naturalWidth !== 0) {
-                            ctx.drawImage(images['rock'], p.x - 96, p.y - 100, 192, 192);
+                        let rockImg = images['rock'];
+                        if(rockImg && rockImg.complete && rockImg.naturalWidth !== 0) {
+                            let rW = 150;
+                            let aspect = rockImg.naturalHeight / rockImg.naturalWidth;
+                            let rH = rW * aspect;
+                            ctx.drawImage(rockImg, p.x - rW/2, p.y - rH + 50, rW, rH);
                         }
                     }
                     
@@ -1226,7 +1228,11 @@
                         }
 
                         if (currentSprite) {
-                            ctx.drawImage(currentSprite, p.x - 64, p.y - 188, 128, 220); 
+                            // Динамический подсчет пропорций для идеального отображения модели!
+                            let pW = 120;
+                            let aspect = currentSprite.naturalHeight / currentSprite.naturalWidth;
+                            let pH = pW * aspect;
+                            ctx.drawImage(currentSprite, p.x - pW/2, p.y - pH + 40, pW, pH); 
                         } else {
                             ctx.fillStyle = '#e74c3c';
                             ctx.fillRect(p.x - 20, p.y - 100, 40, 100);
@@ -1238,9 +1244,6 @@
             particles.forEach(p => { ctx.globalAlpha = Math.max(0, p.life); ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill(); });
             ctx.globalAlpha = 1.0; ctx.restore(); 
         }
-
-        // Запуск первой инициализации масштаба при загрузке скрипта
-        resizeGame();
 
         function gameLoop() { if (!gameStarted) return; update(); drawGame(); requestAnimationFrame(gameLoop); }
 
@@ -1340,14 +1343,9 @@
                 if (isShieldActive) {
                     let blockText = document.createElement('div');
                     blockText.innerText = "БЛОК!";
-                    blockText.style.position = 'absolute';
-                    blockText.style.left = endX + 'px';
-                    blockText.style.top = (endY - 40) + 'px';
-                    blockText.style.color = '#3498db';
-                    blockText.style.fontWeight = '900';
-                    blockText.style.fontSize = '30px';
-                    blockText.style.textShadow = '0 0 10px #fff';
-                    blockText.style.zIndex = '205';
+                    blockText.style.position = 'absolute'; blockText.style.left = endX + 'px'; blockText.style.top = (endY - 40) + 'px';
+                    blockText.style.color = '#3498db'; blockText.style.fontWeight = '900'; blockText.style.fontSize = '30px';
+                    blockText.style.textShadow = '0 0 10px #fff'; blockText.style.zIndex = '205';
                     document.getElementById('bossOverlay').appendChild(blockText);
                     setTimeout(() => blockText.remove(), 600);
                 } else {
@@ -1472,16 +1470,17 @@
         }
 
         // --- УПРАВЛЕНИЕ НА КАРТЕ ---
+        // Используем offset, так как они всегда верны относительно самого канваса!
         canvas.addEventListener('pointerdown', (e) => {
             if (!gameStarted || isPaused) return;
             
-            // Получаем точные пиксели внутри канваса, игнорируя масштабирование
+            // Получаем точные пиксели внутри канваса, игнорируя повороты и масштабирование
             const mouseX = e.offsetX / zoom;
             const mouseY = e.offsetY / zoom;
             
             const cameraPos = toScreen(player.x, player.y);
-            let cx = mouseX - canvas.width / 2; 
-            let cy = mouseY - canvas.height / 2;
+            let cx = mouseX - canvas.offsetWidth / 2; 
+            let cy = mouseY - canvas.offsetHeight / 2;
             const sx = cx + cameraPos.x; const sy = cy + cameraPos.y - 40;
             const tw = tileW / 2; const th = tileH / 2;
             const gridX = Math.round((sx / tw + sy / th) / 2); 
