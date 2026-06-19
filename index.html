@@ -566,6 +566,10 @@
 
         const allAssets = {
             'block': 'images/textures/block.png',
+            'block_1': 'images/textures/block_1.png',
+            'block_2': 'images/textures/block_2.png',
+            'block_3': 'images/textures/block_3.png',
+            'block_4': 'images/textures/block_4.png',
             'player': 'images/model/Julia/Julia.png',
             'playerHappy': 'images/model/Julia/Julia_Happy.png',
             'crown': 'images/Crown.png',
@@ -1248,7 +1252,14 @@
 
                     if (!obstacles.find(o => o.x === x && o.y === y)) {
                         if (isRegularBlock || isSecretCube) {
+                            
+                            // Выбираем текстуру в зависимости от координаты (ветки)
                             let blockImg = images['block'];
+                            if (x < 3) blockImg = images['block_1']; // Левая ветка (к Короне/Пасхалке)
+                            else if (x > 5) blockImg = images['block_2']; // Правая ветка (к Щиту)
+                            else if (y < 3) blockImg = images['block_3']; // Верхняя ветка (к Молоту)
+                            else if (y > 5) blockImg = images['block_4']; // Нижняя ветка (к Наплечникам)
+
                             if(blockImg && blockImg.complete && blockImg.naturalWidth !== 0) {
                                 // Идеальные пропорции отрисовки
                                 let bW = 100;
