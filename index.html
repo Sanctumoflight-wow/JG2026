@@ -185,9 +185,10 @@
 
         /* КНОПКИ УПРАВЛЕНИЯ */
         #controls { 
-            position: absolute; bottom: 15px; left: 40px; z-index: 10;
+            position: absolute; bottom: 45px; left: 45px; z-index: 10;
             display: grid; grid-template-columns: 56px 56px 56px; grid-template-rows: 56px 56px 56px; gap: 8px; 
-            transform-origin: bottom left;
+            transform-origin: center;
+            transform: rotate(45deg); /* Поворот под изометрию поля */
         }
         .d-btn { 
             background: rgba(44, 62, 80, 0.8); border: 2px solid rgba(255,255,255,0.3); border-radius: 15px; 
@@ -591,7 +592,7 @@
             'alch': 'images/alch.png',
             'divineShield': 'images/Divine_Shield.jpg',
             'arrow': 'images/Arrow.jpg',
-            'fieldBg': 'images/field_bg.jpg' // <-- Добавлено для фона поля
+            'fieldBg': 'images/field_bg.jpg'
         };
 
         const totalAssets = Object.keys(allAssets).length;
@@ -629,11 +630,9 @@
             const winW = window.innerWidth;
             const winH = window.innerHeight;
             
-            // Базовые размеры
             const baseW = 852;
             const baseH = 393;
             
-            // Находим максимально возможный масштаб, чтобы игра не обрезалась
             const scale = Math.min(winW / baseW, winH / baseH);
             wrapper.style.transform = `scale(${scale})`;
         }
@@ -752,7 +751,6 @@
 
         // --- НАВИГАЦИЯ И ПЕРЕЗАГРУЗКА ---
         function resetGame() {
-            // Скрываем все окна и показываем титульный экран
             document.getElementById('victoryOverlay').style.display = 'none';
             document.getElementById('videoOverlay').style.display = 'none';
             document.getElementById('bossOverlay').style.display = 'none';
@@ -760,7 +758,6 @@
             document.getElementById('startScreen').style.display = 'none';
             document.getElementById('titleScreen').style.display = 'flex';
             
-            // Сбрасываем прогресс и переменные
             score = 0;
             scoreElement.innerText = score + " / " + maxScore;
             document.getElementById('easterScore').innerText = "0 / 1";
@@ -787,7 +784,6 @@
             if (bossInterval) clearInterval(bossInterval);
             if (bossMovementInterval) clearInterval(bossMovementInterval);
             
-            // Сброс медиа
             bgMusic.pause();
             bgMusic.currentTime = 0;
             
@@ -798,7 +794,6 @@
             gameStarted = false;
             isPaused = false;
             
-            // Возобновляем видео заставки, если нужно
             document.getElementById('menuVideo').play().catch(e=>{});
             ctx.clearRect(0, 0, 852, 393);
         }
@@ -1221,7 +1216,7 @@
         }
 
         function drawGame() {
-            ctx.clearRect(0, 0, 852, 393); // Очищаем по базовым координатам
+            ctx.clearRect(0, 0, 852, 393);
             
             // Отрисовка фона арены (статика)
             if (images['fieldBg'] && images['fieldBg'].complete && images['fieldBg'].naturalWidth !== 0) {
@@ -1581,28 +1576,8 @@
         }
 
         // --- УПРАВЛЕНИЕ НА КАРТЕ ---
-        // Используем offset, так как они всегда верны относительно самого канваса!
-        canvas.addEventListener('pointerdown', (e) => {
-            if (!gameStarted || isPaused) return;
-            
-            // Получаем точные пиксели внутри канваса, игнорируя повороты и масштабирование
-            const mouseX = e.offsetX / zoom;
-            const mouseY = e.offsetY / zoom;
-            
-            const cameraPos = toScreen(player.x, player.y);
-            let cx = mouseX - canvas.width / 2; 
-            let cy = mouseY - canvas.height / 2;
-            const sx = cx + cameraPos.x; const sy = cy + cameraPos.y - 40;
-            const tw = tileW / 2; const th = tileH / 2;
-            const gridX = Math.round((sx / tw + sy / th) / 2); 
-            const gridY = Math.round((sy / th - sx / tw) / 2);
-            
-            const moveDistance = Math.abs(gridX - player.x) + Math.abs(gridY - player.y);
-            if (isValidTile(gridX, gridY) && moveDistance === 1) {
-                targetMovePos = { x: gridX, y: gridY }; 
-            }
-        });
-
+        // Перемещение по клику мыши отключено
+        
         document.getElementById('btnUp').addEventListener('pointerdown', () => { targetMovePos = null; movePlayer(0, -1); });
         document.getElementById('btnDown').addEventListener('pointerdown', () => { targetMovePos = null; movePlayer(0, 1); });
         document.getElementById('btnLeft').addEventListener('pointerdown', () => { targetMovePos = null; movePlayer(-1, 0); });
