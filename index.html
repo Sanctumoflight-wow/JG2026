@@ -533,69 +533,30 @@
     </div> 
 
     <script>
+        // --- ФОНОВАЯ ЗАГРУЗКА ВСЕХ ФАЙЛОВ ДЛЯ ПЛАВНОСТИ ---
+        function preloadBackgroundAssets() {
+            const backgroundAssets = [
+                'images/Rune_1.png', 'images/Rune_2.png', 'images/Rune_3.png', 'images/Rune_4.png', 'images/Rune_5.png',
+                'images/dialogs/Dialog_TEST.png', 'images/dialogs/Alina.png', 'images/dialogs/Lera.png', 
+                'images/dialogs/Father.png', 'images/dialogs/Julia.png',
+                'images/boss.png?v=3', 'images/boss_bg.png?v=2', 
+                'images/model/Julia/Julia_Shield.png', 'images/model/Julia/Julia_Hit.png',
+                'images/alch.png', 'images/Divine_Shield.jpg', 'images/Arrow.jpg'
+            ];
+            
+            backgroundAssets.forEach(src => {
+                const img = new Image();
+                img.src = src;
+            });
+
+            const vid = document.createElement('video');
+            vid.src = 'images/ultimate.mp4';
+            vid.preload = 'auto';
+        }
+        preloadBackgroundAssets(); 
+
         let gameStarted = false;
         let isPaused = false; 
-
-        // --- МОЩНАЯ СИСТЕМА ЗАГРУЗКИ (ИНДИКАТОР НА ТИТУЛЬНОМ ЭКРАНЕ) ---
-        const images = {}; 
-        const preloadedImages = []; 
-
-        const allAssets = {
-            'block': 'images/textures/block.png',
-            'player': 'images/model/Julia/Julia.png',
-            'playerHappy': 'images/model/Julia/Julia_Happy.png',
-            'crown': 'images/Crown.png',
-            'shoulders': 'images/Shoulders.png',
-            'hammer': 'images/Hammer.png',
-            'rock': 'images/textures/winterspringfrostsaberrock.png',
-            'tarotCover': 'images/Tarot_Cover.png',
-            'tarot1': 'images/Tarot_1.png',
-            'shield': 'images/Shield.png',
-            'rune1': 'images/Rune_1.png',
-            'rune2': 'images/Rune_2.png',
-            'rune3': 'images/Rune_3.png',
-            'rune4': 'images/Rune_4.png',
-            'rune5': 'images/Rune_5.png',
-            'dialogTest': 'images/dialogs/Dialog_TEST.png',
-            'dialogAlina': 'images/dialogs/Alina.png',
-            'dialogLera': 'images/dialogs/Lera.png',
-            'dialogFather': 'images/dialogs/Father.png',
-            'dialogJulia': 'images/dialogs/Julia.png',
-            'boss': 'images/boss.png?v=3',
-            'bossBg': 'images/boss_bg.png?v=2',
-            'juliaShield': 'images/model/Julia/Julia_Shield.png',
-            'juliaHit': 'images/model/Julia/Julia_Hit.png',
-            'alch': 'images/alch.png',
-            'divineShield': 'images/Divine_Shield.jpg',
-            'arrow': 'images/Arrow.jpg'
-        };
-
-        const totalAssets = Object.keys(allAssets).length;
-        let assetsLoadedCount = 0;
-        const titlePlayBtn = document.getElementById('titlePlayBtn');
-
-        for (const [key, src] of Object.entries(allAssets)) {
-            const img = new Image();
-            img.src = src;
-            preloadedImages.push(img);
-            images[key] = img;
-
-            img.onload = img.onerror = () => {
-                assetsLoadedCount++;
-                if (assetsLoadedCount < totalAssets) {
-                    let percent = Math.round((assetsLoadedCount / totalAssets) * 100);
-                    titlePlayBtn.innerText = `ЗАГРУЗКА ИГРЫ... (${percent}%)`;
-                } else {
-                    titlePlayBtn.innerText = 'ИГРАТЬ';
-                    titlePlayBtn.style.opacity = '1';
-                    titlePlayBtn.style.pointerEvents = 'auto';
-                }
-            };
-        }
-
-        const vidObj = document.createElement('video');
-        vidObj.src = 'images/ultimate.mp4';
-        vidObj.preload = 'auto';
 
         // --- ИДЕАЛЬНОЕ МАСШТАБИРОВАНИЕ (РАСТЯЖКА ПО КРАЯМ) ---
         function resizeGame() {
@@ -1043,8 +1004,8 @@
         function isValidTile(x, y) { 
             if (x >= 0 && y >= 0 && x < mapSize && y < mapSize && mapLayout[y][x] === 1) return true;
             if (easterEggRevealed && secretPath.some(p => p.x === x && p.y === y)) return true;
-            // Разрешаем ходить по шорткату из двух блоков [-2, 4] и [-1, 4], если пасхалка уже найдена
-            if (easterEggFound && y === 4 && (x === -2 || x === -1)) return true;
+            // Шорткат из двух блоков [-1, 4] и [-2, 4] открывается после нахождения пасхалки
+            if (easterEggFound && y === 4 && (x === -1 || x === -2)) return true;
             return false; 
         }
 
@@ -1160,7 +1121,7 @@
                     ctx.globalAlpha = alpha; const p = toScreen(x, y);
                     
                     // Куб пасхалки или кубы шортката
-                    let isSecretCube = (easterEggRevealed && x === -3 && y === 4) || (easterEggFound && y === 4 && (x === -2 || x === -1));
+                    let isSecretCube = (easterEggRevealed && x === -3 && y === 4) || (easterEggFound && y === 4 && (x === -1 || x === -2));
                     let isRegularBlock = (x >= 0 && y >= 0 && x < mapSize && y < mapSize && mapLayout[y][x] === 1);
 
                     if (!obstacles.find(o => o.x === x && o.y === y)) {
@@ -1445,7 +1406,6 @@
                 projectile.remove();
                 if (bossHp <= 0) return;
                 
-                // Проверяем дистанцию до центра босса
                 const dist = Math.hypot(endX - 722, endY - 258);
                 const isHit = dist < 120; // 120px радиус попадания
 
