@@ -1253,12 +1253,19 @@
                     if (!obstacles.find(o => o.x === x && o.y === y)) {
                         if (isRegularBlock || isSecretCube) {
                             
-                            // Выбираем текстуру в зависимости от координаты (ветки)
+                            // --- НОВАЯ СТРОГАЯ ЛОГИКА ЦВЕТОВ ---
                             let blockImg = images['block'];
-                            if (x < 3) blockImg = images['block_1']; // Левая ветка (к Короне/Пасхалке)
-                            else if (x > 5) blockImg = images['block_2']; // Правая ветка (к Щиту)
-                            else if (y < 3) blockImg = images['block_3']; // Верхняя ветка (к Молоту)
-                            else if (y > 5) blockImg = images['block_4']; // Нижняя ветка (к Наплечникам)
+                            if (x === 4 && y === 4) {
+                                blockImg = images['block']; // ТОЛЬКО ЦЕНТР
+                            } else if (x < 4) {
+                                blockImg = images['block_1']; // Левая ветка (и пасхалка)
+                            } else if (x > 4) {
+                                blockImg = images['block_2']; // Правая ветка
+                            } else if (y < 4) {
+                                blockImg = images['block_3']; // Верхняя ветка
+                            } else if (y > 4) {
+                                blockImg = images['block_4']; // Нижняя ветка
+                            }
 
                             if(blockImg && blockImg.complete && blockImg.naturalWidth !== 0) {
                                 // Идеальные пропорции отрисовки
@@ -1586,8 +1593,7 @@
             }, 2000); 
         }
 
-        // --- УПРАВЛЕНИЕ НА КАРТЕ ---
-        // Перемещение по клику мыши отключено
+        // --- УПРАВЛЕНИЕ НА КАРТЕ (МЫШЬ ОТКЛЮЧЕНА) ---
         
         document.getElementById('btnUp').addEventListener('pointerdown', () => { targetMovePos = null; movePlayer(0, -1); });
         document.getElementById('btnDown').addEventListener('pointerdown', () => { targetMovePos = null; movePlayer(0, 1); });
