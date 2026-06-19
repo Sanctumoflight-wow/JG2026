@@ -335,7 +335,7 @@
         .heart { font-size: 24px; transition: 0.3s; filter: drop-shadow(0 0 5px red); }
         
         #shieldContainer {
-            position: absolute; bottom: 25px; left: 20px; /* Чуть приподнято, чтобы полоска влезла */
+            position: absolute; bottom: 25px; left: 20px; 
             display: flex; flex-direction: column; align-items: center; z-index: 205;
         }
         #shieldBtn {
@@ -357,7 +357,6 @@
             animation: shieldPulse 0.5s infinite alternate;
         }
         
-        /* Полоска теперь абсолютно спозиционирована снизу, чтобы не сдвигать иконку! */
         #shieldBarBg {
             width: 60px; height: 8px; background: rgba(0,0,0,0.7); border-radius: 4px;
             position: absolute; bottom: -12px;
@@ -434,6 +433,16 @@
             <!-- Аудио Контроллер внутри экрана игры -->
             <div id="audioControls">
                 <button id="muteBtn">🔊</button>
+            </div>
+
+            <!-- ТЕЛЕПОРТ МЕНЮ -->
+            <div id="teleportOverlay" class="screen-overlay" style="display: none; background: rgba(0,0,0,0.8); z-index: 4500; flex-direction: column; justify-content: center; align-items: center; text-align: center; backdrop-filter: blur(5px);">
+                <div style="font-size: 40px; font-weight: 900; color: #e74c3c; margin-bottom: 20px; text-shadow: 0 4px 10px #000; letter-spacing: 2px;">ТЕЛЕПОРТ</div>
+                <div style="font-size: 20px; margin-bottom: 40px; color: white; font-weight: 700;">Переместиться в другую зону?</div>
+                <div style="display: flex; gap: 30px;">
+                    <button id="btnTeleportYes" class="action-btn" style="background: linear-gradient(135deg, #2ecc71, #27ae60); color: white; padding: 15px 50px;">ДА</button>
+                    <button id="btnTeleportNo" class="action-btn" style="background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; padding: 15px 50px;">НЕТ</button>
+                </div>
             </div>
 
             <!-- ЭКРАН ПОБЕДЫ -->
@@ -771,8 +780,10 @@
             hammerCollected = false;
             easterEggRevealed = false;
             easterEggFound = false;
+            teleportPrompted = false; // Сброс телепорта
             
             shieldObj.alpha = 1;
+            shieldObj.x = 13; // Сброс позиции щита на остров!
             player = { x: 4, y: 4 };
             prevPlayerPos = { x: 4, y: 4 };
             targetMovePos = null;
@@ -1104,33 +1115,30 @@
             [0,0,0, 1,1,1, 0,0,0]  
         ];
 
-        // МАРШРУТ ПАСХАЛКИ ПО КРАСНОЙ ЛИНИИ ОТ КОРОНЫ [0, 4]:
-        // 3 шага "Вверх" : [0, 3], [0, 2], [0, 1]
-        // 1 шаг "Влево" : [-1, 1]
-        // 1 шаг "Вниз" : [-1, 2] -> Финальный куб на X: -1, Y: 2
+        // Прямой маршрут влево от Короны [0, 4]
         const secretPath = [
-            {x: 0, y: 3}, {x: 0, y: 2}, {x: 0, y: 1},
-            {x: -1, y: 1}, 
-            {x: -1, y: 2}
+            {x: -1, y: 4}, {x: -2, y: 4}, {x: -3, y: 4}
         ];
 
         function isValidTile(x, y) { 
             if (x >= 0 && y >= 0 && x < mapSize && y < mapSize && mapLayout[y][x] === 1) return true;
-            if (easterEggRevealed && secretPath.some(p => p.x === x && p.y === y)) return true;
-            // Разрешаем ходить по шорткату из двух блоков [-1, 3] и [-1, 4], если пасхалка уже найдена
-            if (easterEggFound && x === -1 && (y === 3 || y === 4)) return true;
+            // Скрытый путь к пасхалке (Прямая влево)
+            if (easterEggRevealed && y === 4 && x >= -3 && x <= -1) return true;
+            // Остров для Щита (Крест вокруг [13, 4])
+            if ((x >= 12 && x <= 14 && y === 4) || (x === 13 && y === 3) || (x === 13 && y === 5)) return true;
             return false; 
         }
 
         let player = { x: 4, y: 4 }; let prevPlayerPos = { x: 4, y: 4 }; 
         let score = 0; const maxScore = 4; 
         let crown = { x: 0, y: 4 }; let crownCollected = false; 
-        let shieldObj = { x: 8, y: 4, alpha: 1 }; let shieldCollected = false;
+        let shieldObj = { x: 13, y: 4, alpha: 1 }; let shieldCollected = false; // Щит теперь на острове
         let shoulders = { x: 4, y: 7 }; let shouldersCollected = false;
         let hammer = { x: 4, y: 0 }; let hammerCollected = false;
         
         let easterEggRevealed = false; 
         let easterEggFound = false;
+        let teleportPrompted = false; // Флаг для защиты от спама меню телепорта
 
         let obstacles = [{x: 3, y: 3}, {x: 5, y: 3}, {x: 3, y: 5}, {x: 5, y: 5}, {x: 4, y: 8}];
         let particles = []; let targetMovePos = null; let moveTimer = 0;
@@ -1189,7 +1197,7 @@
             }
 
             // ПРОВЕРКА НА ПАСХАЛКУ
-            if (easterEggRevealed && !easterEggFound && player.x === -1 && player.y === 2) {
+            if (easterEggRevealed && !easterEggFound && player.x === -3 && player.y === 4) {
                 isPaused = true; targetMovePos = null;
                 showDialogue("Ха-ха, а ты гений!", () => {
                     easterEggFound = true; 
@@ -1198,6 +1206,25 @@
                     spawnParticles(player.x, player.y, '#f1c40f');
                     isPaused = false; checkWin();
                 }, { bgImage: images['dialogJulia'].src }); 
+            }
+
+            // ЛОГИКА ТЕЛЕПОРТОВ
+            if (player.x === 8 && player.y === 4) {
+                if (!teleportPrompted) {
+                    isPaused = true; targetMovePos = null;
+                    document.getElementById('teleportOverlay').style.display = 'flex';
+                    document.getElementById('btnTeleportYes').onclick = () => { player.x = 12; player.y = 4; teleportPrompted = true; document.getElementById('teleportOverlay').style.display = 'none'; isPaused = false; playCollectSound(); };
+                    document.getElementById('btnTeleportNo').onclick = () => { teleportPrompted = true; document.getElementById('teleportOverlay').style.display = 'none'; isPaused = false; };
+                }
+            } else if (player.x === 12 && player.y === 4) {
+                if (!teleportPrompted) {
+                    isPaused = true; targetMovePos = null;
+                    document.getElementById('teleportOverlay').style.display = 'flex';
+                    document.getElementById('btnTeleportYes').onclick = () => { player.x = 8; player.y = 4; teleportPrompted = true; document.getElementById('teleportOverlay').style.display = 'none'; isPaused = false; playCollectSound(); };
+                    document.getElementById('btnTeleportNo').onclick = () => { teleportPrompted = true; document.getElementById('teleportOverlay').style.display = 'none'; isPaused = false; };
+                }
+            } else {
+                teleportPrompted = false; // Сбрасываем флаг, если игрок ушел с кружка
             }
         }
 
@@ -1237,21 +1264,24 @@
             ctx.scale(zoom, zoom); 
             ctx.translate(-cameraPos.x, -cameraPos.y + 40); 
 
-            // Отрисовываем более широкую зону, чтобы охватить все пасхалки
-            for (let y = -2; y < mapSize + 2; y++) {
-                for (let x = -4; x < mapSize + 2; x++) {
+            // Отрисовываем более широкую зону, чтобы охватить все острова и дать обзор
+            for (let y = -2; y <= 10; y++) {
+                for (let x = -4; x <= 16; x++) {
                     if (!isValidTile(x, y)) continue;
                     const dist = Math.abs(x - player.x) + Math.abs(y - player.y);
-                    if (dist > 3) continue; 
-                    let alpha = 1.0; if (dist === 2) alpha = 0.8; if (dist === 3) alpha = 0.3;
+                    if (dist > 5) continue; // Увеличили обзор, чтобы было видно соседний остров
+                    let alpha = 1.0; 
+                    if (dist === 3) alpha = 0.8; 
+                    if (dist === 4) alpha = 0.5; 
+                    if (dist === 5) alpha = 0.2;
                     ctx.globalAlpha = alpha; const p = toScreen(x, y);
                     
-                    // Куб пасхалки или кубы шортката
-                    let isSecretCube = (easterEggRevealed && x === -1 && y === 2) || (easterEggFound && x === -1 && (y === 3 || y === 4));
+                    let isSecretCube = (easterEggRevealed && y === 4 && x >= -3 && x <= -1);
                     let isRegularBlock = (x >= 0 && y >= 0 && x < mapSize && y < mapSize && mapLayout[y][x] === 1);
+                    let isShieldPlatform = ((x >= 12 && x <= 14 && y === 4) || (x === 13 && y === 3) || (x === 13 && y === 5));
 
                     if (!obstacles.find(o => o.x === x && o.y === y)) {
-                        if (isRegularBlock || isSecretCube) {
+                        if (isRegularBlock || isSecretCube || isShieldPlatform) {
                             
                             // --- НОВАЯ СТРОГАЯ ЛОГИКА ЦВЕТОВ ---
                             let blockImg = images['block'];
@@ -1264,11 +1294,10 @@
                             } else if (x < 4) {
                                 blockImg = images['block_1']; // Вся левая ветка и пасхалка
                             } else if (x > 4) {
-                                blockImg = images['block_2']; // Вся правая ветка
+                                blockImg = images['block_2']; // Вся правая ветка и Остров Щита
                             }
 
                             if(blockImg && blockImg.complete && blockImg.naturalWidth !== 0) {
-                                // Идеальные пропорции отрисовки
                                 let bW = 100;
                                 let aspect = blockImg.naturalHeight / blockImg.naturalWidth;
                                 let bH = bW * aspect;
@@ -1283,13 +1312,31 @@
                 }
             }
             
-            for (let y = -2; y < mapSize + 2; y++) {
-                for (let x = -4; x < mapSize + 2; x++) {
+            for (let y = -2; y <= 10; y++) {
+                for (let x = -4; x <= 16; x++) {
                     if (!isValidTile(x, y)) continue;
                     const dist = Math.abs(x - player.x) + Math.abs(y - player.y);
-                    if (dist > 3) continue; 
-                    let alpha = 1.0; if (dist === 2) alpha = 0.8; if (dist === 3) alpha = 0.3;
+                    if (dist > 5) continue; 
+                    let alpha = 1.0; 
+                    if (dist === 3) alpha = 0.8; 
+                    if (dist === 4) alpha = 0.5; 
+                    if (dist === 5) alpha = 0.2;
                     ctx.globalAlpha = alpha; const p = toScreen(x, y);
+
+                    // Отрисовка красных кругов телепорта
+                    if ((x === 8 && y === 4) || (x === 12 && y === 4)) {
+                        ctx.save();
+                        ctx.strokeStyle = "rgba(231, 76, 60, 0.8)";
+                        ctx.lineWidth = 3;
+                        ctx.shadowColor = "rgba(231, 76, 60, 1)";
+                        ctx.shadowBlur = 15;
+                        ctx.beginPath();
+                        ctx.ellipse(p.x, p.y + 25, 35, 17, 0, 0, Math.PI * 2);
+                        ctx.stroke();
+                        ctx.fillStyle = "rgba(231, 76, 60, 0.2)";
+                        ctx.fill();
+                        ctx.restore();
+                    }
 
                     if (obstacles.find(o => o.x === x && o.y === y)) {
                         let rockImg = images['rock'];
@@ -1334,7 +1381,6 @@
                         ctx.shadowColor = "rgba(241, 196, 15, 0.8)";
                         ctx.shadowBlur = 10;
                         ctx.beginPath();
-                        // Круг под персонажем идеально подогнан по плоскости (подняли по Y)
                         ctx.ellipse(p.x - 2, p.y + 15, 35, 17, 0, 0, Math.PI * 2);
                         ctx.stroke();
                         ctx.fillStyle = "rgba(241, 196, 15, 0.15)";
@@ -1349,7 +1395,6 @@
                         }
 
                         if (currentSprite) {
-                            // Отрисовка центрирована относительно нового положения круга
                             let pW = 120;
                             let aspect = currentSprite.naturalHeight / currentSprite.naturalWidth;
                             let pH = pW * aspect;
@@ -1448,7 +1493,6 @@
             let projectile = document.createElement('div');
             projectile.className = 'boss-projectile';
             
-            // Задаем строгие координаты старта и конца в пространстве 852x393
             const startX = 722; 
             const startY = 258; 
             const endX = 118; 
@@ -1474,7 +1518,7 @@
                     setTimeout(() => blockText.remove(), 600);
                 } else {
                     const playerImg = document.getElementById('arenaPlayer');
-                    playerHp -= 1; // Урон Юле!
+                    playerHp -= 1;
                     updateHearts();
                     playerImg.style.filter = 'brightness(0.5) sepia(1) hue-rotate(-50deg) saturate(5) drop-shadow(0 0 20px red)';
                     
@@ -1593,7 +1637,7 @@
             }, 2000); 
         }
 
-        // --- УПРАВЛЕНИЕ НА КАРТЕ (МЫШЬ ОТКЛЮЧЕНА) ---
+        // Перемещение по клику мыши отключено
         
         document.getElementById('btnUp').addEventListener('pointerdown', () => { targetMovePos = null; movePlayer(0, -1); });
         document.getElementById('btnDown').addEventListener('pointerdown', () => { targetMovePos = null; movePlayer(0, 1); });
