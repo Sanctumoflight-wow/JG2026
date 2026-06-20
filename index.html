@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" style="background-color: #111111;">
 <head>
     <meta charset="UTF-8">
     <!-- ЖЕСТКАЯ БЛОКИРОВКА ЗУМА И ЖЕСТОВ НА МОБИЛЬНЫХ -->
@@ -9,6 +9,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#111111">
+    <meta name="color-scheme" content="dark">
     
     <title>Calliope Game 2</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;900&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
@@ -29,6 +30,21 @@
             user-select: none; 
             -webkit-user-select: none;
             overscroll-behavior: none;
+        }
+
+        /* --- APPLE SPLASH SCREEN --- */
+        #apple-splash {
+            position: fixed; 
+            top: 0; left: 0; 
+            width: 100vw; height: 100dvh; 
+            background: #111111; 
+            z-index: 999999; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            color: white;
+            transition: opacity 0.5s ease-in-out;
         }
 
         /* --- ЭКРАН С ПРОСЬБОЙ ПОВЕРНУТЬ ТЕЛЕФОН --- */
@@ -447,6 +463,12 @@
 </head>
 <body>
 
+    <!-- APPLE SPLASH SCREEN (Скрывается после загрузки) -->
+    <div id="apple-splash">
+        <div style="font-size: 50px; animation: spin 2s linear infinite; margin-bottom: 20px;">⚙️</div>
+        <div style="font-family: 'Montserrat', sans-serif; font-size: 18px; font-weight: 700; letter-spacing: 2px; color: #f1c40f;">APPLE ЗАВОДИТ ШАРМАНКУ...</div>
+    </div>
+
     <!-- КНОПКА ПОЛНОГО ЭКРАНА (ПОВЕРХ ВСЕГО) -->
     <button id="fullscreenToggleBtn">На весь экран</button>
 
@@ -465,6 +487,7 @@
         <div style="font-size: 40px; animation: bounceDown 1.5s infinite;">👇</div>
     </div>
 
+    <!-- АУДИО (БЕЗ ПАНЕЛИ УПРАВЛЕНИЯ) -->
     <audio id="bgMusic" loop>
         <source src="https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3" type="audio/mpeg">
         <source src="images/music.mp3" type="audio/mpeg">
@@ -620,6 +643,17 @@
     </div> 
 
     <script>
+        // --- УДАЛЕНИЕ SPLASH СЦЕНЫ ПОСЛЕ ЗАГРУЗКИ DOM ---
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const splash = document.getElementById('apple-splash');
+                if(splash) {
+                    splash.style.opacity = '0';
+                    setTimeout(() => { splash.style.display = 'none'; }, 500);
+                }
+            }, 800); // Показываем заставку почти секунду, пока движок "прогревается"
+        });
+
         // --- ПРОВЕРКА ЗАПУСКА С ЭКРАНА ДОМОЙ ДЛЯ IOS ---
         const isIOS = (/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) && !window.MSStream;
         const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
@@ -628,7 +662,7 @@
         const fsBtn = document.getElementById('fullscreenToggleBtn');
         // Если это iPhone (даже PWA) или устройство вообще не поддерживает Fullscreen API, удаляем кнопку
         if (isIOS || (!document.fullscreenEnabled && !document.webkitFullscreenEnabled)) {
-            fsBtn.style.display = 'none';
+            if (fsBtn) fsBtn.style.display = 'none';
         }
 
         // Если это iPhone, и игра открыта в Safari (не с экрана домой) -> Блокируем и требуем установки!
@@ -765,10 +799,13 @@
         const collectSound = document.getElementById('collectSound');
         const typeSound = document.getElementById('typeSound');
         
-        // Глушитель для проигрывания аудио
+        // Надежный глушитель для проигрывания аудио (предотвращает краш, если Safari заблокирует звук)
         function playCollectSound() { 
             collectSound.currentTime = 0; 
-            collectSound.play().catch(()=>{}); 
+            let cpPromise = collectSound.play();
+            if (cpPromise !== undefined) {
+                cpPromise.catch(()=>{ /* Игнорируем ошибку автоплея */ });
+            }
         }
 
         function enterFullscreen() {
@@ -862,26 +899,37 @@
             gameStarted = false;
             isPaused = false;
             
-            document.getElementById('menuVideo').play().catch(()=>{});
+            let vpPromise = document.getElementById('menuVideo').play();
+            if(vpPromise !== undefined) vpPromise.catch(()=>{});
+            
             ctx.clearRect(0, 0, 852, 393);
         }
 
-        // СТАРТ ИГРЫ: Здесь включаем звуки, так как это первое осознанное касание
+        // СТАРТ ИГРЫ: Здесь включаем звуки, так как это первое осознанное касание. Снятие блокировки Safari!
         playButton.addEventListener('pointerdown', (e) => {
             e.preventDefault();
             if (assetsLoadedCount < totalAssets) return;
             
-            // Фиксируем громкость, убираем MUTE логику
+            // Фиксируем громкость жестко в коде
             bgMusic.volume = 0.3;
             collectSound.volume = 1.0;
             typeSound.volume = 1.0;
+
+            // Холостой запуск для снятия блокировки автоплея (Audio Context Unlock)
+            let unlockType = typeSound.play();
+            if (unlockType !== undefined) unlockType.then(() => typeSound.pause()).catch(()=>{});
+            
+            let unlockCollect = collectSound.play();
+            if (unlockCollect !== undefined) unlockCollect.then(() => collectSound.pause()).catch(()=>{});
 
             if (!isIOS) enterFullscreen();
             
             document.getElementById('menuVideo').pause();
             document.getElementById('titleScreen').style.display = 'none';
             document.getElementById('startScreen').style.display = 'flex';
-            bgMusic.play().catch(()=>{});
+            
+            let bgPromise = bgMusic.play();
+            if (bgPromise !== undefined) bgPromise.catch(()=>{});
         });
 
         document.getElementById('startFieldBtn').addEventListener('pointerdown', (e) => {
@@ -1129,9 +1177,13 @@
                 if (callback) callback();
             };
 
+            // Надежный запуск звука печатной машинки
             typeSound.currentTime = 0;
             typeSound.loop = true;
-            typeSound.play().catch(()=>{});
+            let tpPromise = typeSound.play();
+            if (tpPromise !== undefined) {
+                tpPromise.catch(()=>{ /* Игнорируем ошибку автоплея */ });
+            }
 
             dialogueTypingInterval = setInterval(() => {
                 document.getElementById('dialogueText').innerText += dialogueFullText.charAt(dialogueCurrentIndex);
@@ -1718,7 +1770,8 @@
         vid.addEventListener('error', () => {
             console.warn("Видео ultimate.mp4 не найдено или заблокировано.");
             document.getElementById('videoOverlay').style.display = 'none';
-            bgMusic.play().catch(()=>{});
+            let bgPromise = bgMusic.play();
+            if (bgPromise !== undefined) bgPromise.catch(()=>{});
             document.getElementById('victoryOverlay').style.display = 'flex';
         });
 
@@ -1740,7 +1793,8 @@
                 playPromise.catch(error => {
                     console.warn("Автоплей заблокирован: ", error);
                     vidOverlay.style.display = 'none';
-                    bgMusic.play().catch(()=>{});
+                    let bgPromise2 = bgMusic.play();
+                    if (bgPromise2 !== undefined) bgPromise2.catch(()=>{});
                     setTimeout(() => { document.getElementById('victoryOverlay').style.display = 'flex'; }, 500);
                 });
             }
@@ -1749,7 +1803,8 @@
         document.getElementById('ultimateVideo').addEventListener('ended', () => {
             document.getElementById('videoOverlay').style.display = 'none';
             document.getElementById('victoryOverlay').style.display = 'flex';
-            bgMusic.play().catch(()=>{}); 
+            let bgPromise = bgMusic.play();
+            if (bgPromise !== undefined) bgPromise.catch(()=>{});
         });
     </script>
 </body>
