@@ -2,10 +2,8 @@
 <html lang="ru" style="background-color: #111111;">
 <head>
     <meta charset="UTF-8">
-    <!-- ЖЕСТКАЯ БЛОКИРОВКА ЗУМА И ЖЕСТОВ НА МОБИЛЬНЫХ -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
-    <!-- ТЕГИ ДЛЯ ПОЛНОЭКРАННОГО РЕЖИМА PWA НА IOS -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#111111">
@@ -14,7 +12,6 @@
     <title>Calliope Game 2</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;900&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
     <style>
-        /* ЖЕСТКИЙ ФИКС ДЛЯ IOS SAFARI (ЧТОБЫ ЭКРАН НЕ УЕЗЖАЛ ВВЕРХ И НЕ СКРОЛЛИЛСЯ) */
         html, body {
             width: 100%;
             height: 100%;
@@ -35,7 +32,6 @@
             overscroll-behavior: none;
         }
 
-        /* ПОЛНАЯ БЛОКИРОВКА ЭЛЕМЕНТОВ УПРАВЛЕНИЯ ПЛЕЕРОМ В IOS SAFARI */
         video::-webkit-media-controls,
         video::-webkit-media-controls-play-button,
         video::-webkit-media-controls-start-playback-button,
@@ -44,7 +40,6 @@
             -webkit-appearance: none !important;
         }
 
-        /* --- ЭКРАН С ПРОСЬБОЙ ПОВЕРНУТЬ ТЕЛЕФОН --- */
         #rotate-overlay {
             display: none;
             position: fixed;
@@ -65,7 +60,6 @@
             #gameVersion { display: none !important; }
         }
 
-        /* --- КНОПКА СВЕРНУТЬ / НА ВЕСЬ ЭКРАН --- */
         #fullscreenToggleBtn {
             position: fixed; 
             top: 15px; 
@@ -86,7 +80,6 @@
         }
         #fullscreenToggleBtn:hover { background: #f1c40f; color: #111; }
 
-        /* --- ОТЛАДОЧНАЯ КНОПКА РЕСТАРТА В ПРАВОМ НИЖНЕМ УГЛУ --- */
         #debugRestartBtn {
             position: fixed; 
             bottom: 20px; 
@@ -108,7 +101,6 @@
         }
         #debugRestartBtn:active { transform: scale(0.9); border-color: #e74c3c; color: #e74c3c; }
 
-        /* --- СУПЕР-КОНТЕЙНЕР (ФЛЕКС-ЦЕНТРИРОВАНИЕ) --- */
         #game-container {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -120,7 +112,6 @@
             background-color: #111;
         }
 
-        /* --- ИГРОВОЙ ЭКРАН (ЖЕСТКИЕ ПРОПОРЦИИ) --- */
         #mobile-wrapper {
             position: relative;
             width: 852px; 
@@ -131,7 +122,6 @@
             transform-origin: center center;
         }
 
-        /* --- ВЕРСИЯ ИГРЫ --- */
         #gameVersion {
             position: absolute;
             bottom: 10px;
@@ -148,7 +138,6 @@
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
         }
 
-        /* --- ТИТУЛЬНЫЙ ЭКРАН --- */
         #titleScreen {
             z-index: 150;
             color: #fff;
@@ -170,7 +159,6 @@
             margin: 0;
         }
 
-        /* --- ПОЛОСА ЗАГРУЗКИ --- */
         #loadingContainer {
             position: absolute;
             bottom: 15%;
@@ -210,7 +198,6 @@
             transition: width 0.2s linear;
         }
 
-        /* --- КНОПКА ИГРАТЬ --- */
         .start-btn {
             background: linear-gradient(to bottom, #f39c12, #d35400); color: #fff; font-size: 30px; font-weight: 900; 
             padding: 10px 40px; border: 3px solid #fff; border-radius: 15px; cursor: pointer;
@@ -233,7 +220,6 @@
             transform: translate(-50%, 6px) !important;
         }
 
-        /* --- СТАРТОВЫЙ ЭКРАН --- */
         #startScreen {
             display: none; 
             background: linear-gradient(135deg, #1a252f, #2c3e50);
@@ -261,10 +247,8 @@
             flex: 0 0 25%; display: flex; align-items: flex-start; justify-content: center;
         }
 
-        /* --- ЭЛЕМЕНТЫ ИГРЫ --- */
         #gameUI { display: none; z-index: 50; }
         
-        /* ОБНОВЛЕННЫЙ ТРЕКЕР С ИКОНКАМИ */
         #tracker {
             position: absolute; top: 15px; left: 40px; z-index: 10;
             background: rgba(0, 0, 0, 0.6); padding: 10px 20px; border-radius: 15px;
@@ -284,7 +268,6 @@
         
         canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: block; z-index: 1; }
 
-        /* КНОПКИ УПРАВЛЕНИЯ */
         #controls { 
             position: absolute; bottom: 45px; left: 45px; z-index: 10;
             display: grid; grid-template-columns: 56px 56px 56px; grid-template-rows: 56px 56px 56px; gap: 8px; 
@@ -292,7 +275,9 @@
             transform: rotate(45deg); 
         }
         .d-btn { 
-            background: rgba(44, 62, 80, 0.8); border: 2px solid rgba(255,255,255,0.3); border-radius: 15px; 
+            background: rgba(44, 62, 80, 0.8); 
+            border: 3px solid #e67e22; /* Оранжевая обводка средней толщины */
+            border-radius: 15px; 
             display: flex; justify-content: center; align-items: center; cursor: pointer; user-select: none; 
             backdrop-filter: blur(5px); padding: 0; overflow: hidden;
         }
@@ -307,10 +292,29 @@
         .btn-up { grid-column: 2; grid-row: 1; } .btn-left { grid-column: 1; grid-row: 2; }
         .btn-right { grid-column: 3; grid-row: 2; } .btn-down { grid-column: 2; grid-row: 3; }
 
-        /* --- ОКНА ВНУТРИ ИГРЫ --- */
-        #victoryOverlay { display: none; background: rgba(0, 0, 0, 0.85); z-index: 5000; flex-direction: column; justify-content: center; align-items: center; text-align: center; backdrop-filter: blur(5px); }
-        .victory-title { font-size: 40px; font-weight: 900; color: #f1c40f; margin-bottom: 10px; }
-        .victory-text { font-size: 18px; margin-bottom: 20px; }
+        #victoryOverlay { 
+            display: none; background: rgba(0, 0, 0, 0.6); z-index: 5000; flex-direction: column; 
+            justify-content: center; align-items: center; text-align: center; backdrop-filter: blur(3px); position: relative;
+        }
+        #endingVideo {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; pointer-events: none;
+        }
+        .victory-title { font-size: 40px; font-weight: 900; color: #f1c40f; margin-bottom: 10px; z-index: 1;}
+        .victory-text { font-size: 18px; margin-bottom: 20px; z-index: 1;}
+
+        #videoOverlay {
+            display: none; z-index: 6000; background: #000; position: absolute; top:0; left:0; width:100%; height:100%;
+        }
+        .cutscene-video {
+            width: 100%; height: 100%; object-fit: cover; display: none; position: absolute; top: 0; left: 0;
+        }
+        #skipVideoBtn {
+            position: absolute; top: 20px; right: 20px; z-index: 6010;
+            background: rgba(0,0,0,0.5); border: 2px solid rgba(255,255,255,0.5); color: #fff;
+            padding: 8px 18px; border-radius: 8px; font-family: 'Montserrat', sans-serif; 
+            font-weight: 700; cursor: pointer; backdrop-filter: blur(5px); transition: 0.2s;
+        }
+        #skipVideoBtn:active { transform: scale(0.9); }
 
         #dialogueOverlay {
             display: none; z-index: 4000; background: rgba(0, 0, 0, 0.2); 
@@ -347,7 +351,6 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.5);
         }
 
-        /* --- НОВЫЙ ДИЗАЙН ДНД МИНИ-ИГРЫ (МОЛОТ) --- */
         #dndGameOverlay {
             display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background-color: #000; z-index: 4500;
@@ -409,7 +412,6 @@
             font-family: 'Montserrat', sans-serif; transition: 0.2s; z-index: 4505; font-size: 10px;
         }
 
-        /* РУННАЯ МИНИ-ИГРА */
         #runeGameOverlay {
             display: none; background: rgba(0, 0, 0, 0.95); z-index: 4500; 
             flex-direction: column; justify-content: center; align-items: center; text-align: center;
@@ -421,7 +423,6 @@
         }
         .rune-pulse { animation: pulseRune 0.8s infinite alternate; }
 
-        /* ТАРО МИНИ-ИГРА */
         #tarotGameOverlay {
             display: none; background: rgba(0, 0, 0, 0.95); z-index: 4500; 
             flex-direction: column; justify-content: space-between; align-items: center; text-align: center;
@@ -445,7 +446,6 @@
             margin-bottom: 20px;
         }
 
-        /* --- АРЕНА ДЛЯ БОССА --- */
         #bossOverlay {
             display: none; background: url('images/boss_bg.png?v=2') center/cover no-repeat;
             z-index: 200; flex-direction: column; align-items: center; overflow: hidden;
@@ -481,7 +481,6 @@
             animation: spin 1s linear infinite;
         }
 
-        /* --- СТИЛИ ЩИТА И ЗДОРОВЬЯ --- */
         #playerHpContainer {
             position: absolute; top: 20px; left: 20px;
             display: flex; align-items: center; gap: 15px; z-index: 203;
@@ -536,7 +535,6 @@
             animation: spin 1s linear infinite;
         }
 
-        /* --- КНОПКА ДОБИТЬ И ВИДЕО УЛЬТИМЕЙТА --- */
         #finishHimOverlay {
             display: none; justify-content: center; align-items: center; z-index: 5005; background: rgba(0,0,0,0.5);
         }
@@ -544,17 +542,12 @@
             background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; font-size: 40px; padding: 20px 60px; 
             border: 3px solid #fff; box-shadow: 0 0 30px #e74c3c; animation: pulseRed 1s infinite;
         }
-        #videoOverlay {
-            display: none; z-index: 6000; background: #000;
-        }
-        #ultimateVideo {
-            width: 100%; height: 100%; object-fit: cover;
-        }
 
         .action-btn {
             padding: 10px 40px; font-size: 20px; font-weight: 700; cursor: pointer;
             border: none; border-radius: 30px; background: linear-gradient(135deg, #f1c40f, #f39c12);
             color: #2c3e50; transition: 0.2s; text-transform: uppercase;
+            z-index: 2; /* Над видео Ending */
         }
         .action-btn:hover { transform: scale(1.05); }
 
@@ -608,7 +601,7 @@
         <div id="mobile-wrapper">
 
             <!-- ВЕРСИЯ ИГРЫ (Отображается внутри экрана) -->
-            <div id="gameVersion">v1.05</div>
+            <div id="gameVersion">v1.06</div>
 
             <!-- ТЕЛЕПОРТ МЕНЮ -->
             <div id="teleportOverlay" class="screen-overlay" style="display: none; background: rgba(0,0,0,0.8); z-index: 4500; flex-direction: column; justify-content: center; align-items: center; text-align: center; backdrop-filter: blur(5px);">
@@ -620,8 +613,9 @@
                 </div>
             </div>
 
-            <!-- ЭКРАН ПОБЕДЫ -->
+            <!-- ЭКРАН ПОБЕДЫ С ВИДЕО ФОНОМ -->
             <div id="victoryOverlay" class="screen-overlay">
+                <video id="endingVideo" src="images/Ending.mp4" loop muted playsinline webkit-playsinline disablePictureInPicture></video>
                 <div class="victory-title">ПОБЕДА!</div>
                 <div class="victory-text">Ты собрала все артефакты<br>и одолела Босса!</div>
                 <button class="action-btn" onclick="resetGame()">Вернуться в начало</button>
@@ -755,13 +749,16 @@
                 <p id="bossHintText">Жми на босса, чтобы бросать предмет!</p>
             </div>
 
-            <!-- ОКНА ДОБИВАНИЯ И ВИДЕО -->
+            <!-- ОКНА ДОБИВАНИЯ -->
             <div id="finishHimOverlay" class="screen-overlay">
                 <button id="finishHimBtn" class="action-btn">ДОБИТЬ!</button>
             </div>
 
+            <!-- УНИВЕРСАЛЬНЫЙ ОВЕРЛЕЙ ДЛЯ ВИДЕО (Hammer, Ultimate) -->
             <div id="videoOverlay" class="screen-overlay">
-                <video id="ultimateVideo" src="images/ultimate.mp4" playsinline></video>
+                <button id="skipVideoBtn">Пропустить</button>
+                <video id="hammerVideo" class="cutscene-video" src="images/Hammer.mp4" playsinline webkit-playsinline></video>
+                <video id="ultimateVideo" class="cutscene-video" src="images/ultimate.mp4" playsinline webkit-playsinline></video>
             </div>
 
         </div>
@@ -774,17 +771,14 @@
             if(vid) vid.play().catch(()=>{});
         });
 
-        // --- ПРОВЕРКА ЗАПУСКА С ЭКРАНА ДОМОЙ ДЛЯ IOS ---
         const isIOS = (/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) && !window.MSStream;
         const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 
-        // --- УМНАЯ КНОПКА ПОЛНОГО ЭКРАНА ---
         const fsBtn = document.getElementById('fullscreenToggleBtn');
         if (isIOS || (!document.fullscreenEnabled && !document.webkitFullscreenEnabled)) {
             if (fsBtn) fsBtn.style.display = 'none';
         }
 
-        // Если это iPhone, и игра открыта в Safari (не с экрана домой) -> Блокируем и требуем установки!
         if (isIOS && !isStandalone) {
             document.getElementById('game-container').style.display = 'none';
             document.getElementById('rotate-overlay').style.setProperty('display', 'none', 'important');
@@ -794,7 +788,6 @@
         let gameStarted = false;
         let isPaused = false; 
         
-        // НОВЫЕ ФЛАГИ ДЛЯ ОПТИМИЗАЦИИ (ОТ ЗАВИСАНИЙ И УТЕЧЕК)
         let isWinTriggered = false; 
         let isBossFight = false;
         let winTimeout = null;
@@ -867,11 +860,6 @@
             };
         }
 
-        const vidObj = document.createElement('video');
-        vidObj.src = 'images/ultimate.mp4';
-        vidObj.preload = 'auto';
-
-        // --- ИДЕАЛЬНОЕ МАСШТАБИРОВАНИЕ ЧЕРЕЗ FLEX И SCALE ---
         function resizeGame() {
             const wrapper = document.getElementById('mobile-wrapper');
             const winW = window.innerWidth;
@@ -896,7 +884,6 @@
             return { x, y };
         }
 
-        // --- ИГРОВОЕ ПОЛЕ И HIGH-DPI CANVAS ---
         const canvas = document.getElementById('gameCanvas'); 
         const ctx = canvas.getContext('2d');
         const scoreElement = document.getElementById('score');
@@ -919,7 +906,6 @@
         }
         initCanvas();
 
-        // --- АУДИО ---
         const bgMusic = document.getElementById('bgMusic');
         const collectSound = document.getElementById('collectSound');
         const typeSound = document.getElementById('typeSound');
@@ -976,16 +962,60 @@
         document.addEventListener('mozfullscreenchange', handleFullscreenChange);
         document.addEventListener('MSFullscreenChange', handleFullscreenChange);
 
-        // --- ЦЕНТРАЛИЗОВАННАЯ ОПТИМИЗАЦИЯ СЧЕТЧИКА ---
         function addScore() {
             score++;
             scoreElement.innerText = score + " / " + maxScore;
             if (score >= maxScore) {
-                scoreElement.style.color = '#f1c40f'; // Загорается золотым
+                scoreElement.style.color = '#f1c40f'; 
             }
         }
 
-        // --- НАВИГАЦИЯ И ПЕРЕЗАГРУЗКА ---
+        let activeVideo = null;
+        let videoEndedCallback = null;
+
+        function playCutscene(videoId, callback) {
+            document.getElementById('videoOverlay').style.display = 'block';
+            document.getElementById('hammerVideo').style.display = 'none';
+            document.getElementById('ultimateVideo').style.display = 'none';
+            
+            activeVideo = document.getElementById(videoId);
+            activeVideo.style.display = 'block';
+            videoEndedCallback = callback;
+            
+            bgMusic.pause();
+            
+            activeVideo.currentTime = 0;
+            let playPromise = activeVideo.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(err => {
+                    console.warn("Cutscene blocked", err);
+                    endCutscene();
+                });
+            }
+        }
+
+        function endCutscene() {
+            if (activeVideo) {
+                activeVideo.pause();
+                activeVideo.style.display = 'none';
+                activeVideo = null;
+            }
+            document.getElementById('videoOverlay').style.display = 'none';
+            if (videoEndedCallback) {
+                let cb = videoEndedCallback;
+                videoEndedCallback = null;
+                cb();
+            }
+        }
+
+        document.getElementById('skipVideoBtn').addEventListener('pointerdown', (e) => {
+            e.preventDefault();
+            endCutscene();
+        });
+
+        document.getElementById('hammerVideo').addEventListener('ended', endCutscene);
+        document.getElementById('ultimateVideo').addEventListener('ended', endCutscene);
+
         function resetGame() {
             document.getElementById('victoryOverlay').style.display = 'none';
             document.getElementById('videoOverlay').style.display = 'none';
@@ -1010,9 +1040,9 @@
             easterEggFound = false;
             teleportPrompted = false;
             
-            isWinTriggered = false; // Сброс триггера победы
-            isBossFight = false;    // Сброс режима босса
-            if (winTimeout) clearTimeout(winTimeout); // Сброс таймера перехода
+            isWinTriggered = false; 
+            isBossFight = false;    
+            if (winTimeout) clearTimeout(winTimeout); 
             
             shieldObj.alpha = 1;
             shieldObj.x = 13; 
@@ -1034,9 +1064,9 @@
             bgMusic.pause();
             bgMusic.currentTime = 0;
             
-            const vid = document.getElementById('ultimateVideo');
-            vid.pause();
-            vid.currentTime = 0;
+            if(activeVideo) endCutscene();
+            const eVid = document.getElementById('endingVideo');
+            if(eVid) { eVid.pause(); eVid.currentTime = 0; }
             
             gameStarted = false;
             isPaused = false;
@@ -1047,7 +1077,6 @@
             ctx.clearRect(0, 0, 852, 393);
         }
 
-        // СТАРТ ИГРЫ
         playButton.addEventListener('pointerdown', (e) => {
             e.preventDefault();
             if (assetsLoadedCount < totalAssets) return;
@@ -1084,7 +1113,6 @@
             setTimeout(resizeGame, 50); 
         });
 
-        // --- D&D МИНИ-ИГРА ДЛЯ МОЛОТА ---
         let currentDndFrame = 1;
 
         function startDndGame() {
@@ -1111,16 +1139,23 @@
                 addDndChoice("1. Выпрыгнуть и закричать на гоблинов", () => renderDndFrame('death'));
                 addDndChoice("2. Дождаться пока гоблины уснут", () => renderDndFrame(3));
                 addDndChoice("3. Уйти", () => failDndGame("Ты тихо ушла, оставив молот у гоблинов."));
+            } else if (frame === 'death') {
+                // ИГРОК УМИРАЕТ В ДНД - ЕГО ПРОСТО ВЫКИДЫВАЕТ НАЗАД (БЕЗ ПОТЕРИ ПРОГРЕССА)
+                bgEl.style.backgroundImage = `url('${images['dnd_death'].src}')`;
+                textEl.innerText = "Твой крик разбудил весь лагерь! Гоблины набросились на тебя толпой. Придется отступить...";
+                addDndChoice("Вернуться назад", () => {
+                    document.getElementById('dndGameOverlay').style.display = 'none';
+                    isPaused = false; 
+                    targetMovePos = null;
+                    player.x = prevPlayerPos.x;
+                    player.y = prevPlayerPos.y;
+                });
             } else if (frame === 3) {
                 bgEl.style.backgroundImage = `url('${images['dnd_3'].src}')`;
                 textEl.innerText = "Гоблины крепко спят. Ты аккуратно забираешь свой молот!";
-                addDndChoice("Забрать молот", () => winDndGame());
-            } else if (frame === 'death') {
-                bgEl.style.backgroundImage = `url('${images['dnd_death'].src}')`;
-                textEl.innerText = "Твой крик разбудил весь лагерь! Гоблины набросились на тебя толпой. Ты погибла...";
-                addDndChoice("Начать игру заново", () => {
+                addDndChoice("Забрать молот", () => {
                     document.getElementById('dndGameOverlay').style.display = 'none';
-                    resetGame(); 
+                    playCutscene('hammerVideo', winDndGame); // Запускаем видео!
                 });
             }
         }
@@ -1131,7 +1166,7 @@
             btn.innerText = text;
             btn.onclick = (e) => {
                 e.stopPropagation(); 
-                btn.disabled = true; // Защита от двойного случайного клика
+                btn.disabled = true; 
                 callback();
             };
             document.getElementById('dndChoices').appendChild(btn);
@@ -1152,7 +1187,7 @@
         }
 
         function winDndGame() {
-            document.getElementById('dndGameOverlay').style.display = 'none';
+            // Эта функция срабатывает ПОСЛЕ видео Hammer.mp4
             showDialogue("Ого, тяжелый молот!\nОн точно пригодится в битве.", () => {
                 hammerCollected = true; 
                 addScore();
@@ -1160,14 +1195,17 @@
                 spawnParticles(hammer.x, hammer.y, '#95a5a6'); 
                 isPaused = false; 
                 checkWin();
+                // Возвращаем музыку после катсцены
+                let bgPromise = bgMusic.play();
+                if (bgPromise !== undefined) bgPromise.catch(()=>{});
             }, { bgImage: images['dialogTest'].src });
         }
 
         function skipDndGame() {
-            winDndGame();
+            document.getElementById('dndGameOverlay').style.display = 'none';
+            playCutscene('hammerVideo', winDndGame);
         }
 
-        // --- РУННАЯ МИНИ ИГРА ---
         let currentRuneRound = 1;
         let expectedSequence = [];
         let playerSequence = [];
@@ -1283,7 +1321,6 @@
             }
         }
 
-        // --- ИГРА 2: КАРТЫ ТАРО ---
         function startTarotGame() {
             document.getElementById('tarotGameOverlay').style.display = 'flex';
             animateTarot();
@@ -1316,7 +1353,7 @@
                 document.getElementById('tarotGameOverlay').style.display = 'none';
                 document.getElementById('tarotGameOverlay').onclick = null; 
                 
-                easterEggRevealed = true; // Открывает невидимый путь!
+                easterEggRevealed = true; 
                 showDialogue("А я тебе говорила! Таро всегда знают правду!\nДавай в следующий раз пойдем к гадалке вместе?!", () => {
                     crownCollected = true; 
                     addScore();
@@ -1328,7 +1365,6 @@
             };
         }
 
-        // --- СИСТЕМА ДИАЛОГОВ ---
         let dialogueFullText = "";
         let dialogueCurrentIndex = 0;
         let dialogueTypingInterval;
@@ -1428,7 +1464,6 @@
             [0,0,0, 1,1,1, 0,0,0]  
         ];
 
-        // --- ИДЕАЛЬНЫЙ НЕВИДИМЫЙ ПУТЬ ПАСХАЛКИ (Строго по твоей красной линии) ---
         const secretPath = [
             {x: 0, y: 3}, {x: -1, y: 3}, {x: -2, y: 3}, {x: -3, y: 3}, {x: -3, y: 4}
         ];
@@ -1436,13 +1471,10 @@
         function isValidTile(x, y) { 
             if (x >= 0 && y >= 0 && x < mapSize && y < mapSize && mapLayout[y][x] === 1) return true;
             
-            // Скрытый невидимый обходной путь (идем по воздуху вокруг пустой зоны!)
             if (easterEggRevealed && secretPath.some(p => p.x === x && p.y === y)) return true;
             
-            // Короткий путь обратно (ПОЯВЛЯЕТСЯ ТОЛЬКО ПОСЛЕ СБОРА ПАСХАЛКИ)
             if (easterEggFound && y === 4 && (x === -1 || x === -2)) return true;
             
-            // Остров для Щита (Крест вокруг [13, 4])
             if ((x >= 12 && x <= 14 && y === 4) || (x === 13 && y === 3) || (x === 13 && y === 5)) return true;
             
             return false; 
@@ -1470,17 +1502,16 @@
         }
 
         function movePlayer(dx, dy) {
-            if (!gameStarted || isPaused || isBossFight) return; // Блокировка движения во время битвы с боссом
+            if (!gameStarted || isPaused || isBossFight) return; 
             let nextX = player.x + dx; let nextY = player.y + dy;
             if (!isValidTile(nextX, nextY) || obstacles.find(o => o.x === nextX && o.y === nextY)) { targetMovePos = null; return; }
             prevPlayerPos = { x: player.x, y: player.y }; player.x = nextX; player.y = nextY;
             checkInteractions();
         }
 
-        // --- ИДЕАЛЬНАЯ ЗАЩИТА ОТ ДВОЙНЫХ СРАБАТЫВАНИЙ И ЗАВИСАНИЙ ---
         function checkWin() { 
             if (score >= maxScore && !isWinTriggered) { 
-                isWinTriggered = true; // Блокируем повторный вызов
+                isWinTriggered = true; 
                 isPaused = true; 
                 isPlayerHappy = true;
                 
@@ -1515,7 +1546,6 @@
                 }, { bgImage: images['dialogFather'].src });
             }
 
-            // ПРОВЕРКА НА ПАСХАЛКУ (Сбор происходит на координате [-3, 4])
             if (easterEggRevealed && !easterEggFound && player.x === -3 && player.y === 4) {
                 isPaused = true; targetMovePos = null;
                 showDialogue("Ха-ха, а ты гений!", () => {
@@ -1595,12 +1625,11 @@
                     ctx.globalAlpha = alpha; const p = toScreen(x, y);
                     
                     let isShortcut = (easterEggFound && y === 4 && (x === -1 || x === -2));
-                    let isEasterEggCube = (easterEggRevealed && x === -3 && y === 4); // Появляется после взятия короны
+                    let isEasterEggCube = (easterEggRevealed && x === -3 && y === 4); 
                     let isRegularBlock = (x >= 0 && y >= 0 && x < mapSize && y < mapSize && mapLayout[y][x] === 1);
                     let isShieldPlatform = ((x >= 12 && x <= 14 && y === 4) || (x === 13 && y === 3) || (x === 13 && y === 5));
 
                     if (!obstacles.find(o => o.x === x && o.y === y)) {
-                        // Отрисовываем кубы только если это НЕ невидимый путь!
                         if (isRegularBlock || isShortcut || isShieldPlatform || isEasterEggCube) {
                             
                             let blockImg = images['block'];
@@ -1611,7 +1640,7 @@
                             } else if (x >= 3 && x <= 5 && y > 4) {
                                 blockImg = images['block_4']; 
                             } else if (x < 4) {
-                                blockImg = images['block_1']; // Фиолетовая зона
+                                blockImg = images['block_1']; 
                             } else if (x > 4) {
                                 blockImg = images['block_2']; 
                             }
@@ -1731,7 +1760,6 @@
 
         resizeGame();
 
-        // ОПТИМИЗАЦИЯ: Если активирована битва с Боссом, 2D карта больше не рендерится в холостую
         function gameLoop() { 
             if (!gameStarted) return; 
             if (!isBossFight) {
@@ -1741,7 +1769,6 @@
             requestAnimationFrame(gameLoop); 
         }
 
-        // --- ЛОГИКА 2D БОССА ---
         let bossHp = 10; 
         let bossInterval; 
         let bossMovementInterval;
@@ -1812,28 +1839,6 @@
             }, 1000); 
         }
 
-        function goToBoss() {
-            isBossFight = true; // Замораживаем отрисовку 2D карты для экономии памяти
-            document.getElementById('gameUI').style.display = 'none';
-            document.getElementById('bossOverlay').style.display = 'flex';
-            
-            document.getElementById('playerHpContainer').style.display = '';
-            document.getElementById('bossSkullsContainer').style.display = '';
-            document.getElementById('shieldContainer').style.display = '';
-            document.getElementById('bossHintText').style.display = 'block';
-
-            if(bossInterval) clearInterval(bossInterval);
-            if(bossMovementInterval) clearInterval(bossMovementInterval);
-
-            bossHp = 10; updateBossSkulls();
-
-            let bossChar = document.getElementById('arenaBoss');
-            bossChar.style.transform = 'translateY(0) rotate(0deg)'; bossChar.style.opacity = '1';
-            bossChar.style.bottom = '12%';
-
-            startBossFight();
-        }
-
         function shootBossProjectile() {
             if (bossHp <= 0 || playerHp <= 0) return;
             
@@ -1885,6 +1890,7 @@
         }
 
         function startBossFight() {
+            toggleBossUI(true); 
             document.getElementById('pauseIndicator').style.display = 'none'; 
             playerHp = 3; updateHearts(); isShieldActive = false; shieldOnCooldown = false;
             bossHp = 10; updateBossSkulls();
@@ -1997,47 +2003,22 @@
             }
         });
 
-        // --- ЛОГИКА ДОБИВАНИЯ И УЛЬТИМЕЙТА ---
-        const vid = document.getElementById('ultimateVideo');
-
-        vid.addEventListener('error', () => {
-            console.warn("Видео ultimate.mp4 не найдено или заблокировано.");
-            document.getElementById('videoOverlay').style.display = 'none';
-            let bgPromise = bgMusic.play();
-            if (bgPromise !== undefined) bgPromise.catch(()=>{});
-            document.getElementById('victoryOverlay').style.display = 'flex';
-        });
-
         document.getElementById('finishHimBtn').addEventListener('click', () => {
             document.getElementById('finishHimOverlay').style.display = 'none';
             
             let bossChar = document.getElementById('arenaBoss');
             bossChar.style.transition = 'all 1s ease-in'; bossChar.style.transform = 'translateY(100vh) rotate(90deg)'; bossChar.style.opacity = '0';
 
-            const vidOverlay = document.getElementById('videoOverlay');
-            vidOverlay.style.display = 'flex';
-            
-            bgMusic.pause();
-
-            vid.load(); 
-            let playPromise = vid.play();
-            
-            if (playPromise !== undefined) {
-                playPromise.catch(error => {
-                    console.warn("Автоплей заблокирован: ", error);
-                    vidOverlay.style.display = 'none';
-                    let bgPromise2 = bgMusic.play();
-                    if (bgPromise2 !== undefined) bgPromise2.catch(()=>{});
-                    setTimeout(() => { document.getElementById('victoryOverlay').style.display = 'flex'; }, 500);
-                });
-            }
-        });
-
-        document.getElementById('ultimateVideo').addEventListener('ended', () => {
-            document.getElementById('videoOverlay').style.display = 'none';
-            document.getElementById('victoryOverlay').style.display = 'flex';
-            let bgPromise = bgMusic.play();
-            if (bgPromise !== undefined) bgPromise.catch(()=>{});
+            playCutscene('ultimateVideo', () => {
+                document.getElementById('victoryOverlay').style.display = 'flex';
+                let endingVid = document.getElementById('endingVideo');
+                if(endingVid) {
+                    endingVid.currentTime = 0;
+                    endingVid.play().catch(()=>{});
+                }
+                let bgPromise = bgMusic.play();
+                if (bgPromise !== undefined) bgPromise.catch(()=>{});
+            });
         });
     </script>
 </body>
