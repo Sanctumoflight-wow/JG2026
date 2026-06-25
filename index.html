@@ -563,7 +563,7 @@
         <div id="mobile-wrapper">
 
             <!-- ВЕРСИЯ ИГРЫ -->
-            <div id="gameVersion">v1.14</div>
+            <div id="gameVersion">v1.17</div>
 
             <!-- ЭКРАН ВЫБОРА ПАСХАЛКИ -->
             <div id="easterEggPromptOverlay" class="screen-overlay">
@@ -863,7 +863,7 @@
         const canvas = document.getElementById('gameCanvas'); 
         const ctx = canvas.getContext('2d');
         const scoreElement = document.getElementById('score');
-        const tileW = 128; const tileH = 64; const mapSize = 9; 
+        const tileW = 128; const tileH = 64; 
         const zoom = 1.0; 
 
         function initCanvas() {
@@ -1021,9 +1021,10 @@
             winTimer = 0; 
             
             shieldObj.alpha = 1;
-            shieldObj.x = 13; 
-            player = { x: 4, y: 4 };
-            prevPlayerPos = { x: 4, y: 4 };
+            shieldObj.x = 18; 
+            shieldObj.y = 7;
+            player = { x: 8, y: 4 };
+            prevPlayerPos = { x: 8, y: 4 };
             targetMovePos = null;
             particles = [];
             isPlayerHappy = false;
@@ -1112,7 +1113,6 @@
             renderDndFrame(1);
         }
 
-        // --- НОВЫЙ ТЕСТОВЫЙ ЭКРАН ДЛЯ ПЛЕЧЕЙ ---
         function startShouldersTest() {
             currentDndType = 'shoulders';
             document.getElementById('dndGameOverlay').style.display = 'flex';
@@ -1124,7 +1124,6 @@
 
             bgEl.style.backgroundImage = `none`; 
             
-            // Центрируем бокс для тестового экрана без книги
             boxEl.style.right = 'auto';
             boxEl.style.left = '50%';
             boxEl.style.top = '50%';
@@ -1158,7 +1157,6 @@
             const boxEl = document.getElementById('dndContentBox');
             choicesEl.innerHTML = ''; 
 
-            // Возвращаем бокс строго на правую страницу книги
             boxEl.style.left = 'auto';
             boxEl.style.right = '38px';
             boxEl.style.top = '40px';
@@ -1493,42 +1491,44 @@
             }
         }
 
+        const mapSizeX = 21;
+        const mapSizeY = 9;
+
         const mapLayout = [
-            [0,0,0, 1,1,1, 0,0,0], 
-            [0,0,0, 1,1,1, 0,0,0], 
-            [0,0,0, 0,1,0, 0,0,0], 
-            [1,1,0, 1,1,1, 0,1,1], 
-            [1,1,1, 1,1,1, 1,1,1], 
-            [1,1,0, 1,1,1, 0,1,1], 
-            [0,0,0, 0,1,0, 0,0,0], 
-            [0,0,0, 1,1,1, 0,0,0], 
-            [0,0,0, 1,1,1, 0,0,0]  
+            [0,0,0,0, 0,0,0,0, 1,0,0, 0,0,0,0, 0,0,0, 0,0,0], 
+            [0,0,0,0, 0,0,0,1, 1,1,0, 0,0,0,0, 0,0,0, 0,0,0], 
+            [0,0,0,0, 0,0,0,0, 1,0,0, 0,0,0,0, 0,0,0, 0,0,0], 
+            [0,0,0,0, 1,0,0,0, 1,0,0, 1,0,0,0, 0,0,0, 0,0,0], 
+            [0,0,0,0, 1,1,1,1, 1,1,1, 1,1,0,0, 0,0,0, 1,0,0], 
+            [0,0,0,0, 1,0,0,0, 1,0,0, 1,0,0,0, 0,0,0, 1,0,0], 
+            [0,0,0,0, 0,0,0,0, 1,0,0, 0,0,0,0, 0,0,0, 1,0,0], 
+            [0,0,0,0, 0,0,0,1, 1,1,0, 0,0,0,0, 0,0,1, 1,1,0], 
+            [0,0,0,0, 0,0,0,0, 1,0,0, 0,0,0,0, 0,0,0, 1,0,0]  
         ];
 
         const secretPath = [
-            {x: 0, y: 3}, {x: -1, y: 3}, {x: -2, y: 3}, {x: -3, y: 3}, {x: -3, y: 4}
+            {x: 4, y: 2}, {x: 3, y: 2}, {x: 2, y: 2}, {x: 1, y: 2},
+            {x: 1, y: 3},
+            {x: 1, y: 4}, {x: 2, y: 4}, {x: 3, y: 4}
         ];
 
         function isValidTile(x, y) { 
-            if (x >= 0 && y >= 0 && x < mapSize && y < mapSize && mapLayout[y][x] === 1) return true;
+            if (x >= 0 && y >= 0 && x < mapSizeX && y < mapSizeY && mapLayout[y][x] === 1) return true;
             if (easterEggRevealed && secretPath.some(p => p.x === x && p.y === y)) return true;
-            if (easterEggFound && y === 4 && (x === -1 || x === -2)) return true;
-            if ((x >= 12 && x <= 14 && y === 4) || (x === 13 && y === 3) || (x === 13 && y === 5)) return true;
             return false; 
         }
 
-        let player = { x: 4, y: 4 }; let prevPlayerPos = { x: 4, y: 4 }; 
+        let player = { x: 8, y: 4 }; let prevPlayerPos = { x: 8, y: 4 }; 
         let score = 0; const maxScore = 4; 
-        let crown = { x: 0, y: 4 }; let crownCollected = false; 
-        let shieldObj = { x: 13, y: 4, alpha: 1 }; let shieldCollected = false; 
-        let shoulders = { x: 4, y: 7 }; let shouldersCollected = false;
-        let hammer = { x: 4, y: 0 }; let hammerCollected = false;
+        let crown = { x: 4, y: 4 }; let crownCollected = false; 
+        let shieldObj = { x: 18, y: 7, alpha: 1 }; let shieldCollected = false; 
+        let shoulders = { x: 8, y: 7 }; let shouldersCollected = false;
+        let hammer = { x: 8, y: 0 }; let hammerCollected = false;
         
         let easterEggRevealed = false; 
         let easterEggFound = false;
         let teleportPrompted = false; 
 
-        // Массив препятствий теперь полностью пуст (все камни удалены с карты)
         let obstacles = [];
         
         let particles = []; let targetMovePos = null; let moveTimer = 0;
@@ -1575,7 +1575,7 @@
                 startShouldersTest();
             }
 
-            if (easterEggRevealed && !easterEggFound && player.x === -3 && player.y === 4) {
+            if (easterEggRevealed && !easterEggFound && player.x === 1 && player.y === 4) {
                 isPaused = true; targetMovePos = null;
                 showDialogue("Ха-ха, а ты гений!", () => {
                     easterEggFound = true; 
@@ -1588,18 +1588,18 @@
                 }, { bgImage: images['dialogJulia'].src }); 
             }
 
-            if (player.x === 8 && player.y === 4) {
+            if (player.x === 12 && player.y === 4) {
+                if (!teleportPrompted) {
+                    isPaused = true; targetMovePos = null;
+                    document.getElementById('teleportOverlay').style.display = 'flex';
+                    document.getElementById('btnTeleportYes').onclick = () => { player.x = 18; player.y = 4; teleportPrompted = true; document.getElementById('teleportOverlay').style.display = 'none'; isPaused = false; playCollectSound(); };
+                    document.getElementById('btnTeleportNo').onclick = () => { teleportPrompted = true; document.getElementById('teleportOverlay').style.display = 'none'; isPaused = false; };
+                }
+            } else if (player.x === 18 && player.y === 4) {
                 if (!teleportPrompted) {
                     isPaused = true; targetMovePos = null;
                     document.getElementById('teleportOverlay').style.display = 'flex';
                     document.getElementById('btnTeleportYes').onclick = () => { player.x = 12; player.y = 4; teleportPrompted = true; document.getElementById('teleportOverlay').style.display = 'none'; isPaused = false; playCollectSound(); };
-                    document.getElementById('btnTeleportNo').onclick = () => { teleportPrompted = true; document.getElementById('teleportOverlay').style.display = 'none'; isPaused = false; };
-                }
-            } else if (player.x === 12 && player.y === 4) {
-                if (!teleportPrompted) {
-                    isPaused = true; targetMovePos = null;
-                    document.getElementById('teleportOverlay').style.display = 'flex';
-                    document.getElementById('btnTeleportYes').onclick = () => { player.x = 8; player.y = 4; teleportPrompted = true; document.getElementById('teleportOverlay').style.display = 'none'; isPaused = false; playCollectSound(); };
                     document.getElementById('btnTeleportNo').onclick = () => { teleportPrompted = true; document.getElementById('teleportOverlay').style.display = 'none'; isPaused = false; };
                 }
             } else {
@@ -1607,18 +1607,15 @@
             }
         }
 
-        // ИСПРАВЛЕНИЕ: Логика выбора пасхалки перед переходом к боссу
         function update() {
             if (isWinTriggered && winTimer > 0) {
                 winTimer--;
                 if (winTimer <= 0) {
                     if (!easterEggFound) {
-                        // Показываем окно выбора
                         document.getElementById('easterEggPromptOverlay').style.display = 'flex';
                         
                         document.getElementById('btnEasterYes').onclick = () => {
                             document.getElementById('easterEggPromptOverlay').style.display = 'none';
-                            // Возвращаем управление для поиска пасхалки
                             isWinTriggered = false; 
                             isPaused = false;
                             isPlayerHappy = false;
@@ -1631,7 +1628,6 @@
                             }, { bgImage: images['dialogTest'].src });
                         };
                     } else {
-                        // Пасхалка найдена, идем прямо к боссу
                         showDialogue("Ура, мы собрали все предметы!\nТеперь у нас достаточно сил, чтобы победить босса!", () => {
                             goToBoss();
                         }, { bgImage: images['dialogTest'].src });
@@ -1673,63 +1669,77 @@
             ctx.scale(zoom, zoom); 
             ctx.translate(-cameraPos.x, -cameraPos.y + 40); 
 
-            for (let y = -2; y <= 10; y++) {
-                for (let x = -4; x <= 16; x++) {
-                    if (!isValidTile(x, y)) continue;
+            // Оптимизированный рендер: рисуем только видимые вокруг игрока блоки (радиус 6)
+            const viewRadius = 6;
+
+            for (let y = player.y - viewRadius; y <= player.y + viewRadius; y++) {
+                for (let x = player.x - viewRadius; x <= player.x + viewRadius; x++) {
+                    let isRegularBlock = (x >= 0 && y >= 0 && x < mapSizeX && y < mapSizeY && mapLayout[y][x] === 1);
+                    let isSecret = (easterEggRevealed && secretPath.some(sp => sp.x === x && sp.y === y));
+
+                    if (!isRegularBlock && !isSecret) continue;
+                    
                     const dist = Math.abs(x - player.x) + Math.abs(y - player.y);
                     if (dist > 5) continue; 
+                    
                     let alpha = 1.0; 
                     if (dist === 3) alpha = 0.8; 
                     if (dist === 4) alpha = 0.5; 
                     if (dist === 5) alpha = 0.2;
-                    ctx.globalAlpha = alpha; const p = toScreen(x, y);
                     
-                    let isShortcut = (easterEggFound && y === 4 && (x === -1 || x === -2));
-                    let isEasterEggCube = (easterEggRevealed && x === -3 && y === 4); 
-                    let isRegularBlock = (x >= 0 && y >= 0 && x < mapSize && y < mapSize && mapLayout[y][x] === 1);
-                    let isShieldPlatform = ((x >= 12 && x <= 14 && y === 4) || (x === 13 && y === 3) || (x === 13 && y === 5));
+                    ctx.globalAlpha = alpha; 
+                    const p = toScreen(x, y);
 
-                    if (isRegularBlock || isShortcut || isShieldPlatform || isEasterEggCube) {
-                        
-                        let blockImg = images['block'];
-                        if (x === 4 && y === 4) {
-                            blockImg = images['block']; 
-                        } else if (x >= 3 && x <= 5 && y < 4) {
-                            blockImg = images['block_3']; 
-                        } else if (x >= 3 && x <= 5 && y > 4) {
-                            blockImg = images['block_4']; 
-                        } else if (x < 4) {
-                            blockImg = images['block_1']; 
-                        } else if (x > 4) {
-                            blockImg = images['block_2']; 
-                        }
-
-                        if(blockImg && blockImg.complete && blockImg.naturalWidth !== 0) {
-                            let bW = 100;
-                            let aspect = blockImg.naturalHeight / blockImg.naturalWidth;
-                            let bH = bW * aspect;
-                            ctx.drawImage(blockImg, p.x - bW/2, p.y - bH/2 + 25, bW, bH); 
-                        } else {
-                            ctx.fillStyle = '#444';
-                            ctx.fillRect(p.x - 49.5, p.y, 99, 85);
-                        }
+                    let blockImg = images['block'];
+                    if (x === 8 && y === 4) {
+                        blockImg = images['block']; 
+                    } else if (x >= 7 && x <= 9 && y < 4) {
+                        blockImg = images['block_3']; 
+                    } else if (x >= 7 && x <= 9 && y > 4) {
+                        blockImg = images['block_4']; 
+                    } else if (x < 8) {
+                        blockImg = images['block_1']; 
+                    } else if (x > 8) {
+                        blockImg = images['block_2']; 
                     }
+
+                    if(blockImg && blockImg.complete && blockImg.naturalWidth !== 0) {
+                        let bW = 100;
+                        let aspect = blockImg.naturalHeight / blockImg.naturalWidth;
+                        let bH = bW * aspect;
+                        
+                        if (isSecret) ctx.filter = 'hue-rotate(180deg) saturate(1.5)';
+                        
+                        ctx.drawImage(blockImg, p.x - bW/2, p.y - bH/2 + 25, bW, bH); 
+                        
+                        if (isSecret) ctx.filter = 'none';
+                    } else {
+                        ctx.fillStyle = isSecret ? '#2980b9' : '#444';
+                        ctx.fillRect(p.x - 49.5, p.y, 99, 85);
+                    }
+                    
                     ctx.globalAlpha = 1.0;
                 }
             }
             
-            for (let y = -2; y <= 10; y++) {
-                for (let x = -4; x <= 16; x++) {
-                    if (!isValidTile(x, y)) continue;
+            for (let y = player.y - viewRadius; y <= player.y + viewRadius; y++) {
+                for (let x = player.x - viewRadius; x <= player.x + viewRadius; x++) {
+                    let isRegularBlock = (x >= 0 && y >= 0 && x < mapSizeX && y < mapSizeY && mapLayout[y][x] === 1);
+                    let isSecret = (easterEggRevealed && secretPath.some(sp => sp.x === x && sp.y === y));
+
+                    if (!isRegularBlock && !isSecret) continue;
+
                     const dist = Math.abs(x - player.x) + Math.abs(y - player.y);
                     if (dist > 5) continue; 
+                    
                     let alpha = 1.0; 
                     if (dist === 3) alpha = 0.8; 
                     if (dist === 4) alpha = 0.5; 
                     if (dist === 5) alpha = 0.2;
-                    ctx.globalAlpha = alpha; const p = toScreen(x, y);
+                    ctx.globalAlpha = alpha; 
+                    const p = toScreen(x, y);
 
-                    if ((x === 8 && y === 4) || (x === 12 && y === 4)) {
+                    if ((x === 12 && y === 4) || (x === 18 && y === 4)) {
                         let portalImg = images['portal'];
                         if (portalImg && portalImg.complete && portalImg.naturalWidth !== 0) {
                             let pW = 130;
@@ -1763,6 +1773,13 @@
                         if(images['shoulders'] && images['shoulders'].complete && images['shoulders'].naturalWidth !== 0) {
                             ctx.drawImage(images['shoulders'], p.x - 32, p.y - 60, 64, 64);
                         }
+                    }
+
+                    if (easterEggRevealed && !easterEggFound && x === 1 && y === 4) {
+                        ctx.font = "40px sans-serif";
+                        ctx.textAlign = "center";
+                        ctx.textBaseline = "middle";
+                        ctx.fillText("🥚", p.x, p.y - 40);
                     }
                     
                     if (x === player.x && y === player.y) {
@@ -2069,7 +2086,16 @@
         document.getElementById('btnRight').addEventListener('pointerdown', () => { targetMovePos = null; movePlayer(1, 0); });
 
         window.addEventListener('keydown', (e) => {
-            if (!gameStarted || isPaused || isBossFight) return; 
+            if (!gameStarted) return; 
+
+            if (e.code === 'Space' && isBossFight) {
+                e.preventDefault();
+                activateShield();
+                return;
+            }
+
+            if (isPaused || isBossFight) return; 
+
             if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
                 e.preventDefault(); targetMovePos = null; 
                 if (e.key === 'ArrowUp') movePlayer(0, -1); if (e.key === 'ArrowDown') movePlayer(0, 1);
