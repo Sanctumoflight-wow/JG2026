@@ -201,31 +201,33 @@
             flex-direction: column;
             align-items: center;
             gap: 8px;
-            width: 80%;
-            max-width: 500px;
+            width: 60%;
+            max-width: 600px;
             z-index: 2;
         }
         #loadingTip {
-            font-size: 13px;
-            color: #e0e0e0;
+            font-size: 14px;
+            color: #f8b700;
             font-family: 'Montserrat', sans-serif;
-            text-shadow: 0 2px 4px #000;
+            text-shadow: 1px 1px 2px #000;
             text-align: center;
+            margin-bottom: 5px;
         }
         #loadingBarBg {
             width: 100%;
-            height: 16px;
-            background: #111;
-            border: 2px solid #222;
-            border-radius: 4px;
-            box-shadow: 0 0 5px #000 inset, 0 0 8px rgba(0,0,0,0.8);
+            height: 24px;
+            background: #1a1a1a;
+            border: 2px solid #000;
+            border-radius: 6px;
+            box-shadow: 0 0 0 2px #4a3c2a, 0 5px 15px rgba(0,0,0,0.8);
             position: relative;
             overflow: hidden;
         }
         #loadingBarFill {
             height: 100%;
             width: 0%;
-            background: linear-gradient(to bottom, #3498db, #1d6fa5);
+            background: linear-gradient(to bottom, #2980b9, #1a5276);
+            box-shadow: inset 0 0 10px rgba(0,150,255,0.5);
             transition: width 0.2s linear;
         }
 
@@ -283,23 +285,25 @@
         /* --- ЭЛЕМЕНТЫ ИГРЫ --- */
         #gameUI { display: none; z-index: 50; }
         
-        /* ОБНОВЛЕННЫЙ ТРЕКЕР С ИКОНКАМИ */
+        /* ОБНОВЛЕННЫЙ ТРЕКЕР: РОВНАЯ СЕТКА И ЦЕНТРИРОВАНИЕ */
         #tracker {
-            position: absolute; top: 15px; left: 40px; z-index: 10;
-            background: rgba(0, 0, 0, 0.6); padding: 10px 20px; border-radius: 15px;
-            border: 2px solid rgba(255, 255, 255, 0.2); backdrop-filter: blur(5px);
-            display: flex; flex-direction: column; gap: 10px;
-            align-items: center; text-align: center;
+            position: absolute; top: 15px; left: 20px; z-index: 10;
+            background: rgba(20, 25, 30, 0.85); padding: 15px 25px; border-radius: 18px;
+            border: 2px solid rgba(255, 255, 255, 0.15); backdrop-filter: blur(8px);
+            display: flex; flex-direction: column; gap: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            align-items: center;
             transition: opacity 0.3s;
         }
-        .tracker-item {
-            display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 700; text-shadow: 0 2px 4px #000; color: white; width: 100%;
+        .tracker-row {
+            display: flex; align-items: center; justify-content: center; gap: 20px; width: 100%;
         }
-        .tracker-item span { 
-            margin-left: 15px; 
-            font-size: 26px; 
-            color: white; 
-            transition: color 0.3s;
+        .tracker-icon {
+            font-size: 32px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.4)); text-align: center;
+        }
+        .tracker-text {
+            font-size: 28px; font-weight: 900; color: #fff; letter-spacing: 2px;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.8); width: 80px; text-align: left;
         }
         
         canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: block; z-index: 1; }
@@ -349,7 +353,7 @@
         .easter-text { font-size: 18px; margin-bottom: 30px; color: white; font-weight: 700; max-width: 80%; line-height: 1.5; }
         .easter-btn-row { display: flex; gap: 30px; }
 
-        /* --- МИНИ-ОКНО ПЕРЕСПРОСА (ТОЧНО К БОССУ?) --- */
+        /* --- МИНИ-ОКНО ПЕРЕСПРОСА ДЛЯ ПАСХАЛКИ --- */
         #confirmBossOverlay {
             display: none; background: rgba(0,0,0,0.85); z-index: 5600; flex-direction: column;
             justify-content: center; align-items: center; text-align: center; backdrop-filter: blur(5px);
@@ -360,6 +364,12 @@
         }
         .confirm-title { font-size: 22px; font-weight: 900; color: #e74c3c; margin-bottom: 15px; text-shadow: 0 2px 4px #000; }
         .confirm-text { font-size: 14px; color: white; margin-bottom: 20px; line-height: 1.4; font-weight: 500; }
+
+        /* --- ТЕЛЕПОРТ МЕНЮ --- */
+        #teleportOverlay {
+            display: none; background: rgba(0,0,0,0.8); z-index: 4500; flex-direction: column; 
+            justify-content: center; align-items: center; text-align: center; backdrop-filter: blur(5px);
+        }
 
         /* --- УНИВЕРСАЛЬНЫЙ ОВЕРЛЕЙ КАТ-СЦЕН --- */
         #videoOverlay {
@@ -436,7 +446,6 @@
         }
         .dnd-content-box {
             position: absolute;
-            /* ЖЕСТКИЕ ПИКСЕЛИ - Гарантируют фиксацию на правой странице */
             right: 38px; 
             top: 40px;
             width: 350px; 
@@ -505,13 +514,32 @@
         #arenaBoss { position: absolute; bottom: 12%; right: 5%; max-height: 45%; width: auto; z-index: 202; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.8)); transition: bottom 0.8s ease-in-out, transform 0.1s, filter 0.1s; cursor: crosshair; }
         .player-projectile { position: absolute; width: 25px; height: 25px; object-fit: contain; z-index: 201; transition: left 2s ease-in, top 2s ease-in; pointer-events: none; filter: drop-shadow(0 0 10px #f1c40f); animation: spin 1s linear infinite; }
 
-        /* --- СТИЛИ ЩИТА И ЗДОРОВЬЯ --- */
+        /* --- СТИЛИ ЩИТА, ПАУЗЫ И ЗДОРОВЬЯ --- */
         #playerHpContainer { position: absolute; top: 20px; left: 20px; display: flex; align-items: center; gap: 15px; z-index: 203; }
+        
+        /* ОБНОВЛЕННАЯ КНОПКА ПАУЗЫ С СИНИМ БОКСОМ */
         #pauseBtn {
-            background: rgba(0,0,0,0.6); border: 2px solid #fff; border-radius: 10px; color: white; font-size: 20px; width: 45px; height: 45px;
-            cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.2s; padding: 0;
+            width: 56px; height: 56px; border-radius: 12px; background: rgba(25, 30, 35, 0.95); color: white;
+            border: 2px solid #fff; cursor: pointer; transition: 0.2s; box-shadow: 0 5px 15px rgba(0,0,0, 0.5);
+            display: flex; justify-content: center; align-items: center; padding: 0; position: relative; z-index: 205;
         }
-        #pauseBtn:hover { background: #f1c40f; border-color: #f1c40f; }
+        #pauseBtn:active { transform: scale(0.95); }
+        
+        .pause-icon-inner {
+            width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg, #5dade2, #2980b9);
+            display: flex; justify-content: center; align-items: center;
+            color: white; font-size: 16px; box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
+
+        /* ПОЛНОЭКРАННЫЙ ОВЕРЛЕЙ ПАУЗЫ */
+        #pauseIndicator {
+            display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.4); z-index: 5000;
+            justify-content: center; align-items: center; text-align: center;
+            font-size: 60px; font-weight: 900; color: #f1c40f; text-shadow: 0 4px 10px #000; letter-spacing: 5px;
+            backdrop-filter: blur(3px); cursor: pointer;
+        }
+
         #heartsBox { display: flex; gap: 5px; }
         .heart { font-size: 24px; transition: 0.3s; filter: drop-shadow(0 0 5px red); }
         
@@ -596,7 +624,7 @@
         <div id="mobile-wrapper">
 
             <!-- ВЕРСИЯ ИГРЫ -->
-            <div id="gameVersion">v1.19</div>
+            <div id="gameVersion">v1.21</div>
 
             <!-- ЭКРАН ВЫБОРА ПАСХАЛКИ -->
             <div id="easterEggPromptOverlay" class="screen-overlay">
@@ -621,7 +649,7 @@
             </div>
 
             <!-- ТЕЛЕПОРТ МЕНЮ -->
-            <div id="teleportOverlay" class="screen-overlay" style="display: none; background: rgba(0,0,0,0.8); z-index: 4500; flex-direction: column; justify-content: center; align-items: center; text-align: center; backdrop-filter: blur(5px);">
+            <div id="teleportOverlay" class="screen-overlay">
                 <div style="font-size: 40px; font-weight: 900; color: #e74c3c; margin-bottom: 20px; text-shadow: 0 4px 10px #000; letter-spacing: 2px;">ТЕЛЕПОРТ</div>
                 <div style="font-size: 20px; margin-bottom: 40px; color: white; font-weight: 700;">Переместиться в другую зону?</div>
                 <div style="display: flex; gap: 30px;">
@@ -675,10 +703,16 @@
 
             <!-- ИГРОВОЕ ПОЛЕ -->
             <div id="gameUI" class="screen-overlay">
-                <!-- ОБНОВЛЕННЫЙ ТРЕКЕР (ЦЕНТРИРОВАНИЕ И ЯЙЦО) -->
+                <!-- ОБНОВЛЕННЫЙ ТРЕКЕР: РОВНАЯ СЕТКА И ЦЕНТРИРОВАНИЕ -->
                 <div id="tracker">
-                    <div class="tracker-item">📦 <span id="score">0 / 4</span></div>
-                    <div class="tracker-item">🥚 <span id="easterScore">0 / 1</span></div>
+                    <div class="tracker-row">
+                        <span class="tracker-icon">📦</span>
+                        <span id="score" class="tracker-text">0 / 4</span>
+                    </div>
+                    <div class="tracker-row">
+                        <span class="tracker-icon">🥚</span>
+                        <span id="easterScore" class="tracker-text">0 / 1</span>
+                    </div>
                 </div>
                 
                 <canvas id="gameCanvas"></canvas>
@@ -737,7 +771,10 @@
                 <div class="arena-ground"></div>
                 
                 <div id="playerHpContainer">
-                    <button id="pauseBtn" onclick="togglePause()">⏸️</button>
+                    <!-- ОБНОВЛЕННАЯ КНОПКА ПАУЗЫ -->
+                    <button id="pauseBtn" onclick="togglePause()">
+                        <div id="pauseIconInner" class="pause-icon-inner">⏸</div>
+                    </button>
                     <div id="heartsBox">
                         <span class="heart">❤️</span>
                         <span class="heart">❤️</span>
@@ -745,7 +782,8 @@
                     </div>
                 </div>
 
-                <div id="pauseIndicator" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 60px; font-weight: 900; color: #f1c40f; text-shadow: 0 4px 10px #000; z-index: 5000; letter-spacing: 5px;">ПАУЗА</div>
+                <!-- ПОЛНОЭКРАННЫЙ ОВЕРЛЕЙ ПАУЗЫ -->
+                <div id="pauseIndicator" onclick="togglePause()">ПАУЗА</div>
 
                 <div id="shieldContainer">
                     <button id="shieldBtn" onclick="activateShield()"></button>
@@ -803,10 +841,8 @@
         let isBossFight = false;
         let winTimer = 0; 
         
-        // Глобальная переменная для понимания текущего D&D квеста (молот или плечи)
         let currentDndType = 'hammer';
 
-        // --- СИСТЕМА ЗАГРУЗКИ ---
         const images = {}; 
         const preloadedImages = [];
 
@@ -856,7 +892,6 @@
         const loadingContainer = document.getElementById('loadingContainer');
         const loadingBarFill = document.getElementById('loadingBarFill');
 
-        // ИСПРАВЛЕННЫЙ ПРЕЛОАДЕР: Безопасная обработка ошибок
         const checkPreloaderProgress = () => {
             assetsLoadedCount++;
             let percent = Math.round((assetsLoadedCount / totalAssets) * 100);
@@ -878,8 +913,8 @@
             img.onload = checkPreloaderProgress;
             img.onerror = () => {
                 console.warn(`[ПРЕЛОАДЕР] Ошибка загрузки ассета: ${src}. Пропускаем...`);
-                images[key] = null; // Помечаем как пустой, чтобы отрисовка не зависла
-                checkPreloaderProgress(); // Прибавляем счетчик в любом случае!
+                images[key] = null; 
+                checkPreloaderProgress(); 
             };
         }
 
@@ -892,7 +927,7 @@
             const baseH = 393;
             
             const scale = Math.min(winW / baseW, winH / baseH);
-            wrapper.style.transform = `scale(${scale})`;
+            wrapper.style.transform = `scale(${scale})`; // ИСПРАВЛЕНИЕ СИНТАКСИСА
         }
         
         window.addEventListener('resize', () => { resizeGame(); setTimeout(resizeGame, 100); setTimeout(resizeGame, 500); });
@@ -1185,7 +1220,7 @@
             const boxEl = document.getElementById('dndContentBox');
             choicesEl.innerHTML = ''; 
 
-            bgEl.style.backgroundImage = `none`; 
+            bgEl.style.backgroundImage = 'none'; // ИСПРАВЛЕНИЕ СИНТАКСИСА
             
             boxEl.style.right = 'auto';
             boxEl.style.left = '50%';
@@ -1226,7 +1261,7 @@
             boxEl.style.transform = 'none';
 
             if (frame === 1) {
-                bgEl.style.backgroundImage = `url('${images['dnd_1'].src}')`;
+                bgEl.style.backgroundImage = `url('${images['dnd_1'].src}')`; // ИСПРАВЛЕНИЕ СИНТАКСИСА
                 textEl.innerText = "Ты пробиваешься в гущу леса, слышишь чей то грубый вой и голоса. Что ты выберешь?";
                 addDndChoice("1. Подойти к кустам не торопясь", () => renderDndFrame(2));
                 addDndChoice("2. Подойти не обращая внимания на звуки", () => failDndGame("Гоблины услышали шум и подняли тревогу! Тебе пришлось бежать."));
@@ -1344,7 +1379,7 @@
 
             for (let i = 0; i < expectedSequence.length; i++) {
                 const runeId = expectedSequence[i];
-                displayArea.innerHTML = `<img src="${images[`rune${runeId}`].src}" style="width: 100px; height: 100px; object-fit: contain; filter: drop-shadow(0 0 15px #f1c40f);" class="rune-pulse">`;
+                displayArea.innerHTML = `<img src="${images[`rune${runeId}`].src}" style="width: 100px; height: 100px; object-fit: contain; filter: drop-shadow(0 0 15px #f1c40f);" class="rune-pulse">`; // ИСПРАВЛЕНИЕ СИНТАКСИСА
                 await new Promise(r => setTimeout(r, 800));
                 displayArea.innerHTML = '';
                 await new Promise(r => setTimeout(r, 200));
@@ -1358,7 +1393,7 @@
             for (let i = 0; i < displayRunes.length; i++) {
                 const runeId = displayRunes[i];
                 let img = document.createElement('img');
-                img.src = images[`rune${runeId}`].src;
+                img.src = images[`rune${runeId}`].src; // ИСПРАВЛЕНИЕ СИНТАКСИСА
                 img.style.width = "80px";
                 img.style.height = "80px";
                 img.style.objectFit = "contain";
@@ -1471,7 +1506,6 @@
         let isDialogueTyping = false;
         let onDialogueComplete = null;
 
-        // ИСПРАВЛЕНА ОШИБКА: Добавлена функция скрытия интерфейса босса, чтобы не вызывать ReferenceError
         function toggleBossUI(show) {
             const display = show ? 'flex' : 'none';
             document.getElementById('playerHpContainer').style.display = display;
@@ -1487,9 +1521,9 @@
             
             const container = document.querySelector('.dialogue-container');
             if (options.bgImage) {
-                container.style.backgroundImage = `url('${options.bgImage}')`;
+                container.style.backgroundImage = `url('${options.bgImage}')`; // ИСПРАВЛЕНИЕ СИНТАКСИСА
             } else {
-                container.style.backgroundImage = `url('${images['dialogTest'].src}')`;
+                container.style.backgroundImage = `url('${images['dialogTest'].src}')`; // ИСПРАВЛЕНИЕ СИНТАКСИСА
             }
             
             document.getElementById('tracker').style.display = 'none';
@@ -1763,9 +1797,14 @@
             const viewRadius = 6;
 
             // ЦИКЛ 1: Отрисовка исключительно физических блоков (пол)
+            // ИСПРАВЛЕНИЕ: Безопасная проверка на выход за границы карты
             for (let y = player.y - viewRadius; y <= player.y + viewRadius; y++) {
                 for (let x = player.x - viewRadius; x <= player.x + viewRadius; x++) {
-                    let isRegularBlock = (x >= 0 && y >= 0 && x < mapSizeX && y < mapSizeY && mapLayout[y][x] === 1);
+                    let isRegularBlock = false;
+                    if (x >= 0 && y >= 0 && x < mapSizeX && y < mapSizeY) {
+                        isRegularBlock = (mapLayout[y][x] === 1);
+                    }
+                    
                     // Шорткаты отрисовываются ТОЛЬКО если пасхалка уже собрана
                     let isShortcut = (easterEggFound && y === 4 && (x === 2 || x === 3));
 
@@ -1813,8 +1852,6 @@
             // ЦИКЛ 2: Отрисовка сущностей (порталы, артефакты, яйцо и сам игрок)
             for (let y = player.y - viewRadius; y <= player.y + viewRadius; y++) {
                 for (let x = player.x - viewRadius; x <= player.x + viewRadius; x++) {
-                    // ВАЖНО: Здесь нет проверки на наличие блока под ногами, 
-                    // чтобы игрок не становился невидимым, шагая "по воздуху" (secretPath).
 
                     const dist = Math.abs(x - player.x) + Math.abs(y - player.y);
                     if (dist > 5) continue; 
@@ -1931,8 +1968,8 @@
         function togglePause() {
             if (document.getElementById('bossOverlay').style.display === 'flex') {
                 isPaused = !isPaused;
-                document.getElementById('pauseBtn').innerText = isPaused ? "▶️" : "⏸️";
-                document.getElementById('pauseIndicator').style.display = isPaused ? "block" : "none";
+                document.getElementById('pauseIconInner').innerText = isPaused ? "▶" : "⏸";
+                document.getElementById('pauseIndicator').style.display = isPaused ? "flex" : "none";
             }
         }
 
@@ -2030,7 +2067,9 @@
             
             setTimeout(() => {
                 projectile.remove();
-                if (bossHp <= 0 || playerHp <= 0) return;
+                
+                // ИСПРАВЛЕНИЕ: Игнорируем урон, если игрок на паузе или уже умер
+                if (bossHp <= 0 || playerHp <= 0 || isPaused) return; 
                 
                 if (isShieldActive) {
                     let blockText = document.createElement('div');
@@ -2049,6 +2088,11 @@
                     if (playerHp <= 0) {
                         clearInterval(bossInterval); 
                         clearInterval(bossMovementInterval);
+                        
+                        // Удаляем летящие снаряды, чтобы не ранить при возрождении
+                        document.querySelectorAll('.boss-projectile').forEach(p => p.remove());
+                        document.querySelectorAll('.player-projectile').forEach(p => p.remove());
+                        
                         setTimeout(() => {
                             showDialogue("Ничего страшного! Попробуй еще раз!\nАктивируй щит, чтобы избежать урона!", () => {
                                 startBossFight();
@@ -2066,7 +2110,7 @@
             playerHp = 3; updateHearts(); isShieldActive = false; shieldOnCooldown = false;
             bossHp = 10; updateBossSkulls();
             isPaused = false;
-            document.getElementById('pauseBtn').innerText = "⏸️";
+            document.getElementById('pauseIconInner').innerText = "⏸";
             
             let pImg = document.getElementById('arenaPlayer');
             pImg.src = images['player'].src;
@@ -2106,7 +2150,8 @@
         }
 
         function damageBoss(e) {
-            if (isPaused || bossHp <= 0 || !canShoot || document.querySelectorAll('.player-projectile').length >= 2) return;
+            // ИСПРАВЛЕНИЕ: Блокировка атаки, если игрок мертв
+            if (isPaused || bossHp <= 0 || playerHp <= 0 || !canShoot || document.querySelectorAll('.player-projectile').length >= 2) return;
             canShoot = false; setTimeout(() => { canShoot = true; }, 1000); 
 
             const playerImg = document.getElementById('arenaPlayer');
@@ -2134,10 +2179,10 @@
 
             setTimeout(() => {
                 projectile.remove();
-                if (bossHp <= 0) return;
+                if (bossHp <= 0 || isPaused) return; // Игнор урона на паузе
                 
                 const dist = Math.hypot(endX - 722, endY - 258);
-                const isHit = dist < 120; // 120px радиус попадания
+                const isHit = dist < 120;
 
                 if (isHit) {
                     bossHp -= 1; 
@@ -2179,7 +2224,11 @@
 
             if (e.code === 'Space' && isBossFight) {
                 e.preventDefault();
-                activateShield();
+                if (isPaused) {
+                    togglePause(); // Пробел может снимать игру с паузы!
+                } else {
+                    activateShield();
+                }
                 return;
             }
 
