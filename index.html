@@ -516,19 +516,12 @@
         /* --- СТИЛИ ЩИТА, ПАУЗЫ И ЗДОРОВЬЯ --- */
         #playerHpContainer { position: absolute; top: 20px; left: 20px; display: flex; align-items: center; gap: 15px; z-index: 203; }
         
-        /* ОБНОВЛЕННАЯ КНОПКА ПАУЗЫ С СИНИМ БОКСОМ */
         #pauseBtn {
             width: 56px; height: 56px; border-radius: 12px; background: rgba(25, 30, 35, 0.95); color: white;
             border: 2px solid #fff; cursor: pointer; transition: 0.2s; box-shadow: 0 5px 15px rgba(0,0,0, 0.5);
             display: flex; justify-content: center; align-items: center; padding: 0; position: relative; z-index: 205;
         }
         #pauseBtn:active { transform: scale(0.95); }
-        
-        .pause-icon-inner {
-            width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg, #5dade2, #2980b9);
-            display: flex; justify-content: center; align-items: center;
-            color: white; font-size: 16px; box-shadow: 0 2px 5px rgba(0,0,0,0.5);
-        }
 
         /* ПОЛНОЭКРАННЫЙ ОВЕРЛЕЙ ПАУЗЫ */
         #pauseIndicator {
@@ -611,6 +604,9 @@
     <audio id="bgMusic" loop>
         <source src="Geometry_of_the_Hidden_Temple.mp3" type="audio/mpeg">
     </audio>
+    <audio id="bossMusic" loop>
+        <source src="Crown_of_Stone_and_Sea.mp3" type="audio/mpeg">
+    </audio>
     <audio id="collectSound"><source src="https://cdn.pixabay.com/download/audio/2021/08/04/audio_0625c1539c.mp3" type="audio/mpeg"></audio>
     <audio id="typeSound">
         <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3?filename=ui-click-43196.mp3" type="audio/mpeg">
@@ -618,12 +614,11 @@
     </audio>
 
     <div id="game-container">
-        
         <!-- ИГРОВОЙ ЭКРАН (ЖЕСТКИЕ ПРОПОРЦИИ 852x393) -->
         <div id="mobile-wrapper">
 
             <!-- ВЕРСИЯ ИГРЫ -->
-            <div id="gameVersion">v1.24</div>
+            <div id="gameVersion">v1.25</div>
 
             <!-- ЭКРАН ВЫБОРА ПАСХАЛКИ -->
             <div id="easterEggPromptOverlay" class="screen-overlay">
@@ -705,7 +700,7 @@
                 <!-- ОБНОВЛЕННЫЙ ТРЕКЕР: РОВНАЯ СЕТКА И ЦЕНТРИРОВАНИЕ -->
                 <div id="tracker">
                     <div class="tracker-row">
-                        <span class="tracker-icon">📦</span>
+                        <span class="tracker-icon"><img src="images/IMG_4300.png" alt="Chest" style="width: 32px; height: 32px; object-fit: contain;"></span>
                         <span id="score" class="tracker-text">0 / 4</span>
                     </div>
                     <div class="tracker-row">
@@ -778,9 +773,8 @@
                 <div class="arena-ground"></div>
                 
                 <div id="playerHpContainer">
-                    <!-- ОБНОВЛЕННАЯ КНОПКА ПАУЗЫ -->
                     <button id="pauseBtn" onclick="togglePause()">
-                        <div id="pauseIconInner" class="pause-icon-inner">⏸</div>
+                        <img id="pausePlayImg" src="images/IMG_4299.png" style="width: 32px; height: 32px; border-radius: 8px; object-fit: contain; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.5));">
                     </button>
                     <div id="heartsBox">
                         <span class="heart">❤️</span>
@@ -891,7 +885,10 @@
             'dnd_2': 'images/dnd_2.jpg',
             'dnd_3': 'images/dnd_3.jpg',
             'dnd_death': 'images/dnd_death.jpg',
-            'portal': 'images/textures/PORTAL.png'
+            'portal': 'images/textures/PORTAL.png',
+            'chest': 'images/IMG_4300.png',
+            'pauseIcon': 'images/IMG_4299.png',
+            'playIcon': 'images/IMG_4301.png'
         };
 
         const totalAssets = Object.keys(allAssets).length;
@@ -935,7 +932,7 @@
             const baseH = 393;
             
             const scale = Math.min(winW / baseW, winH / baseH);
-            wrapper.style.transform = `scale(${scale})`; // ИСПРАВЛЕНИЕ СИНТАКСИСА
+            wrapper.style.transform = `scale(${scale})`; 
         }
         
         window.addEventListener('resize', () => { resizeGame(); setTimeout(resizeGame, 100); setTimeout(resizeGame, 500); });
@@ -973,6 +970,7 @@
         initCanvas();
 
         const bgMusic = document.getElementById('bgMusic');
+        const bossMusic = document.getElementById('bossMusic');
         const collectSound = document.getElementById('collectSound');
         const typeSound = document.getElementById('typeSound');
         
@@ -1136,6 +1134,8 @@
             
             bgMusic.pause();
             bgMusic.currentTime = 0;
+            bossMusic.pause();
+            bossMusic.currentTime = 0;
             
             if(activeVideo) endCutscene();
             const eVid = document.getElementById('endingVideo');
@@ -1169,9 +1169,11 @@
             if (assetsLoadedCount < totalAssets) return;
             
             bgMusic.volume = 0.3;
+            bossMusic.volume = 0.3;
             
             typeSound.muted = true;
             collectSound.muted = true;
+            bossMusic.muted = true;
 
             let unlockType = typeSound.play();
             if (unlockType !== undefined) {
@@ -1181,6 +1183,11 @@
             let unlockCollect = collectSound.play();
             if (unlockCollect !== undefined) {
                 unlockCollect.then(() => { collectSound.pause(); collectSound.currentTime = 0; collectSound.muted = false; }).catch(()=>{});
+            }
+
+            let unlockBoss = bossMusic.play();
+            if (unlockBoss !== undefined) {
+                unlockBoss.then(() => { bossMusic.pause(); bossMusic.currentTime = 0; bossMusic.muted = false; }).catch(()=>{});
             }
 
             let endingVid = document.getElementById('endingVideo');
@@ -1237,7 +1244,7 @@
             const boxEl = document.getElementById('dndContentBox');
             choicesEl.innerHTML = ''; 
 
-            bgEl.style.backgroundImage = 'none'; // ИСПРАВЛЕНИЕ СИНТАКСИСА
+            bgEl.style.backgroundImage = 'none';
             
             boxEl.style.right = 'auto';
             boxEl.style.left = '50%';
@@ -1278,7 +1285,7 @@
             boxEl.style.transform = 'none';
 
             if (frame === 1) {
-                bgEl.style.backgroundImage = `url('${images['dnd_1'].src}')`; // ИСПРАВЛЕНИЕ СИНТАКСИСА
+                bgEl.style.backgroundImage = `url('${images['dnd_1'].src}')`; 
                 textEl.innerText = "Ты пробиваешься в гущу леса, слышишь чей то грубый вой и голоса. Что ты выберешь?";
                 addDndChoice("1. Подойти к кустам не торопясь", () => renderDndFrame(2));
                 addDndChoice("2. Подойти не обращая внимания на звуки", () => failDndGame("Гоблины услышали шум и подняли тревогу! Тебе пришлось бежать."));
@@ -1396,7 +1403,7 @@
 
             for (let i = 0; i < expectedSequence.length; i++) {
                 const runeId = expectedSequence[i];
-                displayArea.innerHTML = `<img src="${images[`rune${runeId}`].src}" style="width: 100px; height: 100px; object-fit: contain; filter: drop-shadow(0 0 15px #f1c40f);" class="rune-pulse">`; // ИСПРАВЛЕНИЕ СИНТАКСИСА
+                displayArea.innerHTML = `<img src="${images[`rune${runeId}`].src}" style="width: 100px; height: 100px; object-fit: contain; filter: drop-shadow(0 0 15px #f1c40f);" class="rune-pulse">`; 
                 await new Promise(r => setTimeout(r, 800));
                 displayArea.innerHTML = '';
                 await new Promise(r => setTimeout(r, 200));
@@ -1410,7 +1417,7 @@
             for (let i = 0; i < displayRunes.length; i++) {
                 const runeId = displayRunes[i];
                 let img = document.createElement('img');
-                img.src = images[`rune${runeId}`].src; // ИСПРАВЛЕНИЕ СИНТАКСИСА
+                img.src = images[`rune${runeId}`].src; 
                 img.style.width = "80px";
                 img.style.height = "80px";
                 img.style.objectFit = "contain";
@@ -1538,9 +1545,9 @@
             
             const container = document.querySelector('.dialogue-container');
             if (options.bgImage) {
-                container.style.backgroundImage = `url('${options.bgImage}')`; // ИСПРАВЛЕНИЕ СИНТАКСИСА
+                container.style.backgroundImage = `url('${options.bgImage}')`;
             } else {
-                container.style.backgroundImage = `url('${images['dialogTest'].src}')`; // ИСПРАВЛЕНИЕ СИНТАКСИСА
+                container.style.backgroundImage = `url('${images['dialogTest'].src}')`;
             }
             
             document.getElementById('tracker').style.display = 'none';
@@ -1822,7 +1829,6 @@
             const viewRadius = 6;
 
             // ЦИКЛ 1: Отрисовка исключительно физических блоков (пол)
-            // ИСПРАВЛЕНИЕ: Безопасная проверка на выход за границы карты
             for (let y = player.y - viewRadius; y <= player.y + viewRadius; y++) {
                 for (let x = player.x - viewRadius; x <= player.x + viewRadius; x++) {
                     let isRegularBlock = false;
@@ -1993,7 +1999,7 @@
         function togglePause() {
             if (document.getElementById('bossOverlay').style.display === 'flex') {
                 isPaused = !isPaused;
-                document.getElementById('pauseIconInner').innerText = isPaused ? "▶" : "⏸";
+                document.getElementById('pausePlayImg').src = isPaused ? "images/IMG_4301.png" : "images/IMG_4299.png";
                 document.getElementById('pauseIndicator').style.display = isPaused ? "flex" : "none";
             }
         }
@@ -2093,7 +2099,6 @@
             setTimeout(() => {
                 projectile.remove();
                 
-                // ИСПРАВЛЕНИЕ: Игнорируем урон, если игрок на паузе или уже умер
                 if (bossHp <= 0 || playerHp <= 0 || isPaused) return; 
                 
                 if (isShieldActive) {
@@ -2114,7 +2119,6 @@
                         clearInterval(bossInterval); 
                         clearInterval(bossMovementInterval);
                         
-                        // Удаляем летящие снаряды, чтобы не ранить при возрождении
                         document.querySelectorAll('.boss-projectile').forEach(p => p.remove());
                         document.querySelectorAll('.player-projectile').forEach(p => p.remove());
                         
@@ -2135,7 +2139,7 @@
             playerHp = 3; updateHearts(); isShieldActive = false; shieldOnCooldown = false;
             bossHp = 10; updateBossSkulls();
             isPaused = false;
-            document.getElementById('pauseIconInner').innerText = "⏸";
+            document.getElementById('pausePlayImg').src = "images/IMG_4299.png";
             
             let pImg = document.getElementById('arenaPlayer');
             pImg.src = images['player'].src;
@@ -2150,6 +2154,10 @@
 
             let bossChar = document.getElementById('arenaBoss');
             bossChar.style.bottom = '12%';
+
+            bgMusic.pause();
+            let bMusic = document.getElementById('bossMusic');
+            if (bMusic.paused) bMusic.play().catch(()=>{});
 
             bossInterval = setInterval(() => { 
                 if (!isPaused) shootBossProjectile(); 
@@ -2175,7 +2183,6 @@
         }
 
         function damageBoss(e) {
-            // ИСПРАВЛЕНИЕ: Блокировка атаки, если игрок мертв
             if (isPaused || bossHp <= 0 || playerHp <= 0 || !canShoot || document.querySelectorAll('.player-projectile').length >= 2) return;
             canShoot = false; setTimeout(() => { canShoot = true; }, 1000); 
 
@@ -2204,7 +2211,7 @@
 
             setTimeout(() => {
                 projectile.remove();
-                if (bossHp <= 0 || isPaused) return; // Игнор урона на паузе
+                if (bossHp <= 0 || isPaused) return;
                 
                 const dist = Math.hypot(endX - 722, endY - 258);
                 const isHit = dist < 120;
@@ -2250,7 +2257,7 @@
             if (e.code === 'Space' && isBossFight) {
                 e.preventDefault();
                 if (isPaused) {
-                    togglePause(); // Пробел может снимать игру с паузы!
+                    togglePause(); 
                 } else {
                     activateShield();
                 }
@@ -2268,6 +2275,7 @@
 
         document.getElementById('finishHimBtn').addEventListener('click', () => {
             document.getElementById('finishHimOverlay').style.display = 'none';
+            document.getElementById('bossMusic').pause();
             
             let bossChar = document.getElementById('arenaBoss');
             bossChar.style.transition = 'all 1s ease-in'; bossChar.style.transform = 'translateY(100vh) rotate(90deg)'; bossChar.style.opacity = '0';
