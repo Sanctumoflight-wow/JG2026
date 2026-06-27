@@ -623,7 +623,7 @@
         <div id="mobile-wrapper">
 
             <!-- ВЕРСИЯ ИГРЫ -->
-            <div id="gameVersion">v1.23</div>
+            <div id="gameVersion">v1.24</div>
 
             <!-- ЭКРАН ВЫБОРА ПАСХАЛКИ -->
             <div id="easterEggPromptOverlay" class="screen-overlay">
@@ -716,6 +716,14 @@
                 
                 <canvas id="gameCanvas"></canvas>
                 
+                <!-- ТУТОРИАЛ УПРАВЛЕНИЯ -->
+                <div id="movementTutorial" class="screen-overlay" style="display: none; background: rgba(0,0,0,0.7); z-index: 5000; pointer-events: none;">
+                    <div style="position: absolute; bottom: 280px; left: 20px; width: 234px; font-size: 18px; font-weight: 700; text-align: center; color: white; text-shadow: 0 2px 4px #000; line-height: 1.4;">
+                        Управляй перемещением с помощью стрелок
+                    </div>
+                    <div style="position: absolute; bottom: 35px; left: 35px; width: 204px; height: 204px; border: 3px dashed white; border-radius: 20px; transform: rotate(45deg); animation: blink 1.5s infinite; pointer-events: none;"></div>
+                </div>
+
                 <div id="controls">
                     <div class="d-btn btn-up" id="btnUp"><img src="images/Arrow.jpg" class="arrow-icon arrow-up" alt="Up"></div>
                     <div class="d-btn btn-left" id="btnLeft"><img src="images/Arrow.jpg" class="arrow-icon arrow-left" alt="Left"></div>
@@ -835,6 +843,7 @@
 
         let gameStarted = false;
         let isPaused = false; 
+        let hasMoved = false;
         
         let isWinTriggered = false; 
         let isBossFight = false;
@@ -1103,6 +1112,10 @@
             isBossFight = false;    
             winTimer = 0; 
             
+            hasMoved = false;
+            document.getElementById('movementTutorial').style.display = 'none';
+            document.getElementById('controls').style.zIndex = '10';
+
             shieldObj.alpha = 1;
             shieldObj.x = 18; 
             shieldObj.y = 7;
@@ -1198,6 +1211,11 @@
             document.getElementById('debugRestartBtn').style.display = 'flex'; 
             document.getElementById('debugWinBtn').style.display = 'flex'; 
             gameStarted = true; 
+            
+            // Включаем туториал управления
+            document.getElementById('movementTutorial').style.display = 'block';
+            document.getElementById('controls').style.zIndex = '5001';
+
             if (assetsLoadedCount === totalAssets) requestAnimationFrame(gameLoop);
             setTimeout(resizeGame, 50); 
         });
@@ -1652,6 +1670,14 @@
 
         function movePlayer(dx, dy) {
             if (!gameStarted || isPaused || isBossFight) return; 
+
+            // Скрываем обучение при первом шаге
+            if (!hasMoved) {
+                hasMoved = true;
+                document.getElementById('movementTutorial').style.display = 'none';
+                document.getElementById('controls').style.zIndex = '10';
+            }
+
             let nextX = player.x + dx; let nextY = player.y + dy;
             if (!isValidTile(nextX, nextY)) { targetMovePos = null; return; }
             prevPlayerPos = { x: player.x, y: player.y }; player.x = nextX; player.y = nextY;
