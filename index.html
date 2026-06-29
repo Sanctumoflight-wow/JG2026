@@ -2,6 +2,7 @@
 <html lang="ru" style="background-color: #000000;">
 <head>
     <meta charset="UTF-8">
+    <link rel="icon" href="images/Crown.png" type="image/png">
     <!-- ЖЕСТКАЯ БЛОКИРОВКА ЗУМА И ЖЕСТОВ НА МОБИЛЬНЫХ -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
@@ -943,6 +944,8 @@
             'playerHappy': 'images/model/Julia/Julia_Happy.png',
             'tarotCover': 'images/Tarot_Cover.png',
             'tarot1': 'images/Tarot_1.png',
+            'tarot2': 'images/Tarot_2.png',
+            'tarot3': 'images/Tarot_3.png',
             'rune1': 'images/Rune_1.png',
             'rune2': 'images/Rune_2.png',
             'rune3': 'images/Rune_3.png',
@@ -1647,7 +1650,7 @@
             for(let i=0; i<3; i++) {
                 cards[i].style.transform = 'scale(1.1) rotateY(90deg)';
                 await new Promise(r => setTimeout(r, 250)); 
-                cards[i].src = images['tarot1'].src;
+                cards[i].src = images['tarot' + (i + 1)].src;
                 cards[i].style.transform = 'scale(1) rotateY(0deg)';
                 await new Promise(r => setTimeout(r, 400)); 
             }
@@ -2263,7 +2266,9 @@
                     blockText.innerText = "БЛОК!";
                     blockText.style.position = 'absolute'; blockText.style.left = endX + 'px'; blockText.style.top = (endY - 40) + 'px';
                     blockText.style.color = '#3498db'; blockText.style.fontWeight = '900'; blockText.style.fontSize = '30px';
-                    blockText.style.textShadow = '0 0 10px #fff'; blockText.style.zIndex = '205';
+                    blockText.style.webkitTextStroke = '1.5px white';
+                    blockText.style.textShadow = '0 0 10px rgba(255,255,255,0.8), 0 0 20px #3498db'; 
+                    blockText.style.zIndex = '205';
                     document.getElementById('bossOverlay').appendChild(blockText);
                     setTimeout(() => blockText.remove(), 600);
                 } else {
@@ -2394,6 +2399,8 @@
                     missText.style.color = '#bdc3c7';
                     missText.style.fontWeight = '900';
                     missText.style.fontSize = '24px';
+                    missText.style.webkitTextStroke = '1px white';
+                    missText.style.textShadow = '0 0 10px rgba(255,255,255,0.8), 0 0 15px #bdc3c7';
                     missText.style.zIndex = '205';
                     document.getElementById('bossOverlay').appendChild(missText);
                     setTimeout(() => missText.remove(), 800);
